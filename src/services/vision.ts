@@ -1,4 +1,5 @@
 import { CONFIG } from '../config';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export interface VisionLabel {
   description: string;
@@ -11,52 +12,45 @@ export interface VisionAnalysis {
   isSafe: boolean;
 }
 
+const stripBase64Prefix = (base64: string) =>
+  base64.replace(/^data:image\/[a-z]+;base64,/, '');
+
 export const visionService = {
   async analyzeImage(imageUri: string): Promise<VisionAnalysis | null> {
-    if (!CONFIG.API_KEYS.GOOGLE) return null;
+    if (!CONFIG.API_KEYS.GEMINI) return null;
 
     try {
-      // Extract base64 if it's a data URL
-      const base64Image = imageUri.split(',')[1] || imageUri;
+      const genAI = new GoogleGenerativeAI(CONFIG.API_KEYS.GEMINI);
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-      const response = await fetch(
-        `https://vision.googleapis.com/v1/images:annotate?key=${CONFIG.API_KEYS.GOOGLE}`,
+      const mimeType = (imageUri.match(/data:([^;]+);/)?.[1] || 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/webp';
+
+      const result = await model.generateContent([
+        `You are a vision analysis assistant. Look at this image and return ONLY a valid JSON object with no markdown, no extra text:
+{
+  "labels": [{"description": "label name", "score": 0.95}],
+  "isSafe": true,
+  "hasPlastic": true or false,
+  "text": "any text visible in image or empty string"
+}
+Identify all objects, materials, and especially any plastic items, bottles, bags, or waste.`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            requests: [
-              {
-                image: { content: base64Image },
-                features: [
-                  { type: 'LABEL_DETECTION', maxResults: 10 },
-                  { type: 'TEXT_DETECTION' },
-                  { type: 'SAFE_SEARCH_DETECTION' }
-                ]
-              }
-            ]
-          })
+          inlineData: {
+            data: stripBase64Prefix(imageUri),
+            mimeType
+          }
         }
-      );
+      ]);
 
-      if (!response.ok) throw new Error('Vision API failed');
-
-      const data = await response.json();
-      const result = data.responses[0];
-
-      if (!result) return null;
-
-      const safeSearch = result.safeSearchAnnotation;
-      const isSafe = safeSearch ? 
-        (safeSearch.adult === 'VERY_UNLIKELY' && safeSearch.violence === 'VERY_UNLIKELY') : true;
+      const responseText = result.response.text().trim();
+      // Strip markdown code fences if present
+      const cleaned = responseText.replace(/^```json\n?|```$/g, '').trim();
+      const parsed = JSON.parse(cleaned);
 
       return {
-        labels: (result.labelAnnotations || []).map((l: any) => ({
-          description: l.description,
-          score: l.score
-        })),
-        text: result.fullTextAnnotation?.text,
-        isSafe
+        labels: parsed.labels || [],
+        text: parsed.text || '',
+        isSafe: parsed.isSafe !== false
       };
     } catch (error) {
       console.error('Vision Service Error:', error);
