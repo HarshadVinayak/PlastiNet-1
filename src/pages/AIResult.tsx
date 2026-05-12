@@ -44,6 +44,7 @@ const AIResult = () => {
   const [verificationStatus, setVerificationStatus] = useState<'APPROVED' | 'DELAYED_REVIEW' | 'REJECTED' | null>(null);
   const [blueprint, setBlueprint] = useState<any>(null);
   const [dynamicTips, setDynamicTips] = useState<{reduce: string[], reuse: string[], recycle: string[], impact: string} | null>(null);
+  const [showCoins, setShowCoins] = useState(false);
 
   useEffect(() => {
     const processRewards = async () => {
@@ -406,6 +407,7 @@ const AIResult = () => {
                   clearSession();
                   navigate('/');
                 } else {
+                  setShowCoins(true);
                   const loadingToast = toast.loading("Syncing base rewards...");
                   try {
                     await addTransaction('BONUS', 2, 'Base Scanning Points (Fast-Track)');
@@ -414,8 +416,10 @@ const AIResult = () => {
                     console.error("Reward sync failed:", e);
                     toast.error("Reward sync failed, but proceeding...", { id: loadingToast });
                   } finally {
-                    clearSession();
-                    navigate('/');
+                    setTimeout(() => {
+                      clearSession();
+                      navigate('/');
+                    }, 1200);
                   }
                 }
               }}
@@ -442,45 +446,63 @@ const AIResult = () => {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="glass-card max-w-lg w-full p-10 border-white/10 relative"
               onClick={(e) => e.stopPropagation()}
+              className="glass-card p-6 w-full max-w-md border-white/10 relative"
             >
               <button 
                 onClick={() => setSelectedIdea(null)}
-                className="absolute top-6 right-6 text-white/40 hover:text-white"
+                className="absolute top-4 right-4 text-white/40 hover:text-white"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
-
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className={`p-4 rounded-3xl bg-white/5 ${selectedIdea.color}`}>
-                    <Info size={32} />
-                  </div>
-                  <h3 className="text-3xl font-black italic uppercase tracking-tighter">{selectedIdea.title}</h3>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-white/5 rounded-lg">
+                  <Info className={selectedIdea.color} />
                 </div>
-                
-                <p className="text-lg text-white/60 leading-relaxed italic">"{selectedIdea.description}"</p>
-                
-                <div className="space-y-4 pt-4">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Action Steps</h4>
-                  {selectedIdea.steps.map((s: string, i: number) => (
-                    <div key={i} className="flex gap-4 items-start bg-white/5 p-4 rounded-2xl border border-white/5">
-                      <span className={`font-black text-xl ${selectedIdea.color}`}>{i+1}</span>
-                      <p className="text-sm font-bold leading-relaxed">{s}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <button 
-                  onClick={() => setSelectedIdea(null)}
-                  className="w-full btn-primary py-4 mt-4 rounded-2xl"
-                >
-                  Got it
-                </button>
+                <h3 className="text-xl font-bold uppercase tracking-widest">{selectedIdea.title}</h3>
               </div>
+              <p className="text-white/60 text-sm mb-6 italic">"{selectedIdea.description}"</p>
+              <div className="space-y-4 mb-6">
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Action Steps</p>
+                {selectedIdea.steps.map((step: string, i: number) => (
+                  <div key={i} className="flex gap-3 bg-white/5 p-3 rounded-lg border border-white/5">
+                    <span className={`font-bold ${selectedIdea.color}`}>{i + 1}</span>
+                    <p className="text-sm text-white/80">{step}</p>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setSelectedIdea(null)} className="w-full btn-primary py-3">Got it</button>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Coin Animation Overlay */}
+      <AnimatePresence>
+        {showCoins && (
+          <div className="fixed inset-0 pointer-events-none z-[9999]">
+            {[...Array(8)].map((_, i) => (
+              <motion.img
+                key={i}
+                src="/plasticoin.png"
+                alt="PLC"
+                initial={{ opacity: 0, scale: 0, x: '50vw', y: '80vh' }}
+                animate={{ 
+                  opacity: [0, 1, 1, 0], 
+                  scale: [0, 1.5, 1, 0.5],
+                  x: ['50vw', `${30 + (Math.random() * 40)}vw`, '90vw'], 
+                  y: ['80vh', `${30 + (Math.random() * 40)}vh`, '5vh'] 
+                }}
+                transition={{ 
+                  duration: 1.2, 
+                  delay: i * 0.08, 
+                  ease: "easeInOut",
+                  times: [0, 0.2, 0.8, 1]
+                }}
+                className="absolute w-12 h-12 object-contain drop-shadow-[0_0_15px_#39FF14]"
+              />
+            ))}
+          </div>
         )}
       </AnimatePresence>
     </motion.div>
