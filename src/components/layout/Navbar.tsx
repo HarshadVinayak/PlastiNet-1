@@ -32,16 +32,16 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full glass-card border-b border-dark-border/10 px-2 md:px-4 xl:px-8 py-2 md:py-3">
-      <div className="max-w-[1800px] mx-auto flex justify-between items-center gap-4 xl:gap-8">
-        <Link to="/" className="flex items-center gap-2 md:gap-3 group shrink-0">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-txt-primary/5 rounded-xl md:rounded-2xl flex items-center justify-center border border-dark-border/10 group-hover:border-neon-green/30 transition-all duration-300 relative overflow-hidden">
+    <nav className="sticky top-0 z-50 w-full glass-card border-b border-dark-border/10 px-3 md:px-4 xl:px-8 py-2 md:py-3">
+      <div className="max-w-[1800px] mx-auto flex justify-between items-center gap-2">
+        <Link to="/" className="flex items-center gap-2 group shrink-0">
+          <div className="w-10 h-10 md:w-16 md:h-16 bg-txt-primary/5 rounded-lg md:rounded-2xl flex items-center justify-center border border-dark-border/10 group-hover:border-neon-green/30 transition-all duration-300 relative overflow-hidden">
             <div className="absolute inset-0 bg-neon-green/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <img src="/logo.png" alt="PlastiNet Logo" className="w-8 h-8 md:w-12 md:h-12 object-contain relative z-10 group-hover:scale-110 transition-transform duration-500" />
+            <img src="/logo.png" alt="PlastiNet Logo" className="w-7 h-7 md:w-12 md:h-12 object-contain relative z-10 group-hover:scale-110 transition-transform duration-500" />
           </div>
           <div className="-ml-1">
-            <span className="text-xl md:text-2xl font-black tracking-tighter block leading-tight text-txt-primary">PlastiNet</span>
-            <span className="text-[8px] md:text-[10px] text-neon-green font-bold uppercase tracking-[0.2em] opacity-80 hidden xs:block">Environmental AI</span>
+            <span className="text-lg md:text-2xl font-black tracking-tighter block leading-tight text-txt-primary">PlastiNet</span>
+            <span className="text-[7px] md:text-[10px] text-neon-green font-bold uppercase tracking-[0.2em] opacity-80 hidden xs:block">Environmental AI</span>
           </div>
         </Link>
 
@@ -63,7 +63,9 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-1.5 md:gap-4 shrink-0">
-          <PremiumBadge tier={subscription?.plan} showText={false} />
+          <div className="hidden xs:block">
+            <PremiumBadge tier={subscription?.plan} showText={false} />
+          </div>
           
           <button 
             onClick={toggleSearch}
@@ -79,11 +81,11 @@ const Navbar = () => {
             <Sparkles size={18} className="md:w-5 md:h-5 group-hover:rotate-12 transition-transform" />
           </button>
 
-          <Link to="/wallet" className="bg-txt-primary/5 rounded-xl md:rounded-2xl px-2 md:px-4 py-1.5 md:py-2 border border-dark-border/10 flex items-center gap-1.5 md:gap-3 hover:bg-txt-primary/10 transition-colors cursor-pointer group/balance">
+          <Link to="/wallet" className="bg-txt-primary/5 rounded-xl md:rounded-2xl px-2 md:px-4 py-1.5 md:py-2 border border-dark-border/10 flex items-center gap-1.5 md:gap-3 hover:bg-txt-primary/10 transition-colors cursor-pointer group/balance max-w-[80px] xs:max-w-none">
             <img src="/plasticoin.png" alt="PLC" className="w-4 h-4 md:w-6 md:h-6 object-contain animate-pulse-slow group-hover/balance:scale-110 transition-transform" />
             <div className="flex flex-col">
               <span className="text-[8px] xl:text-[10px] font-black text-txt-muted uppercase tracking-widest leading-none mb-1 hidden xl:block">Balance</span>
-              <span className="text-[11px] md:text-sm font-black text-txt-primary leading-none">{balance.toLocaleString()}</span>
+              <span className="text-[11px] md:text-sm font-black text-txt-primary leading-none truncate">{balance.toLocaleString()}</span>
             </div>
           </Link>
         </div>
