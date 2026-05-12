@@ -4,6 +4,7 @@ import { Sparkles, X, Plus, Send, FileText, Trash2, User, Mic, MicOff, Volume2, 
 import { useUIStore } from '../../stores/uiStore';
 import { useAIStore } from '../../stores/aiStore';
 import { SpeechService } from '../../lib/speech';
+import { clsx } from 'clsx';
 
 const ChloeFloatingButton = () => {
   const { isChloeOpen, toggleChloe, setChloeOpen, chloeVoice } = useUIStore();
@@ -74,7 +75,10 @@ const ChloeFloatingButton = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={toggleChloe}
-        className="fixed bottom-24 right-8 z-[4000] w-14 h-14 bg-neon-green rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(57,255,20,0.5)] cursor-grab active:cursor-grabbing"
+        className={clsx(
+          "fixed bottom-28 md:bottom-24 right-4 md:right-8 z-[4000] w-14 h-14 bg-neon-green rounded-full flex items-center justify-center shadow-[0_0_30_rgba(57,255,20,0.5)] cursor-grab active:cursor-grabbing transition-opacity",
+          isChloeOpen && "opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto"
+        )}
       >
         <Sparkles className="text-black" size={28} />
       </motion.button>
@@ -85,7 +89,7 @@ const ChloeFloatingButton = () => {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-32 right-8 w-[400px] h-[600px] z-[5000] flex flex-col glass-card border-neon-green/30 bg-black/95 backdrop-blur-3xl shadow-[0_0_80px_rgba(57,255,20,0.2)] overflow-hidden rounded-[2rem]"
+            className="fixed bottom-24 md:bottom-32 right-0 md:right-8 w-full md:w-[400px] h-[70vh] md:h-[600px] z-[5000] flex flex-col glass-card border-neon-green/30 bg-black/95 backdrop-blur-3xl shadow-[0_0_80px_rgba(57,255,20,0.2)] overflow-hidden rounded-t-[2.5rem] md:rounded-[2rem]"
           >
             {/* Header */}
             <div className="p-5 bg-neon-green text-black flex justify-between items-center shrink-0">

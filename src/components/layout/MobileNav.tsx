@@ -1,9 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Camera, Users, Map as MapIcon, User } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useUIStore } from '../../stores/uiStore';
 
 const MobileNav = () => {
   const location = useLocation();
+  const isChloeOpen = useUIStore(state => state.isChloeOpen);
+
+  if (isChloeOpen) return null;
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
