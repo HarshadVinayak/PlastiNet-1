@@ -43,6 +43,7 @@ const AIResult = () => {
   const [scanLogged, setScanLogged] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<'APPROVED' | 'DELAYED_REVIEW' | 'REJECTED' | null>(null);
   const [blueprint, setBlueprint] = useState<any>(null);
+  const [dynamicTips, setDynamicTips] = useState<{reduce: string[], reuse: string[], recycle: string[], impact: string} | null>(null);
 
   useEffect(() => {
     const processRewards = async () => {
@@ -106,9 +107,31 @@ const AIResult = () => {
         });
       }
     };
+
+    const generateDynamicTips = async () => {
+      if (!session?.beforeData?.type) return;
+      const itemType = session.beforeData.type;
+      const classification = session.beforeData.classification || 'plastic';
+      try {
+        const { aiService } = await import('../services/ai');
+        const resp = await aiService.runTextCompletion(
+          `You are Chloe AI. The user scanned: "${itemType}" (${classification}). Give concise eco-tips. Respond ONLY with valid JSON, no markdown:
+{"reduce":["tip1","tip2"],"reuse":["tip1","tip2"],"recycle":["tip1","tip2"],"impact":"One sentence about environmental impact of this specific item if not recycled."}`,
+        );
+        const start = resp.indexOf('{');
+        const end = resp.lastIndexOf('}');
+        if (start !== -1 && end !== -1) {
+          const parsed = JSON.parse(resp.substring(start, end + 1));
+          setDynamicTips(parsed);
+        }
+      } catch (e) {
+        console.warn('Dynamic tips generation failed, using defaults', e);
+      }
+    };
     
     processRewards();
     generateBlueprint();
+    generateDynamicTips();
   }, [step, isVerification, session, afterImage, rewardProcessed, scanLogged]);
 
   const isApproved = step === 'AFTER' ? verificationStatus === 'APPROVED' : true;
@@ -220,13 +243,10 @@ const AIResult = () => {
             onClick={() => setSelectedIdea({
               title: "Reduce Strategy",
               description: "The most effective way to manage waste is to not create it in the first place.",
-              steps: ["Switch to glass or stainless steel containers.", "Buy in bulk to avoid small plastic packaging.", "Request 'no plastic cutlery' on delivery apps."],
+              steps: dynamicTips?.reduce || ["Switch to glass or stainless steel containers.", "Buy in bulk to avoid small plastic packaging.", "Request 'no plastic cutlery' on delivery apps."],
               color: "text-red-400"
             })}
-            steps={[
-              "Switch to a glass bottle",
-              "Avoid bulk plastic packs"
-            ]}
+            steps={dynamicTips?.reduce || ["Switch to reusable alternative", "Avoid single-use packaging"]}
             color="border-red-500/20"
           />
           <ActionCard 
@@ -236,13 +256,10 @@ const AIResult = () => {
             onClick={() => setSelectedIdea({
               title: "Reuse Masterclass",
               description: "Give your items a second life through creative upcycling.",
-              steps: ["Clean the container thoroughly with non-toxic soap.", "Drill small holes if creating a planter for drainage.", "Paint or wrap in recycled fabric for a premium look."],
+              steps: dynamicTips?.reuse || ["Clean the container thoroughly with non-toxic soap.", "Repurpose creatively as a storage or planter.", "Share upcycling ideas with the community."],
               color: "text-blue-400"
             })}
-            steps={[
-              "Create a DIY planter",
-              "Small parts organizer"
-            ]}
+            steps={dynamicTips?.reuse || ["Repurpose creatively", "Share with community"]}
             color="border-blue-500/20"
           />
           <ActionCard 
@@ -252,13 +269,10 @@ const AIResult = () => {
             onClick={() => setSelectedIdea({
               title: "Correct Recycling",
               description: "Recycling only works if it is done cleanly and correctly.",
-              steps: ["Rinse out all food residue immediately.", "Crush bottles to save space in transport.", "Drop only in verified Yellow Bins or Sector Hubs."],
+              steps: dynamicTips?.recycle || ["Rinse out all food residue immediately.", "Crush bottles to save space in transport.", "Drop only in verified Yellow Bins or Sector Hubs."],
               color: "text-neon-green"
             })}
-            steps={[
-              "Rinse & crush",
-              "Drop in yellow bin"
-            ]}
+            steps={dynamicTips?.recycle || ["Rinse & crush", "Drop in yellow bin"]}
             color="border-neon-green/20"
           />
         </div>
@@ -329,12 +343,13 @@ const AIResult = () => {
             <h3 className="text-2xl font-bold">Environmental Impact</h3>
           </div>
           <p className="text-white/80 text-lg mb-6 leading-relaxed">
-            By recycling this single bottle, you prevent <span className="text-neon-cyan font-bold">0.5kg of CO2</span> from entering the atmosphere. 
-            If you do this for a year, you'll offset the energy used to charge your phone for <span className="text-neon-cyan font-bold">3,500 hours</span>.
+            {dynamicTips?.impact 
+              ? dynamicTips.impact 
+              : `By recycling this ${session?.beforeData?.type || 'item'}, you prevent plastic from entering the environment and reduce the demand for new raw materials.`}
           </p>
           <div className="p-4 bg-black/20 rounded-xl border border-white/5 flex items-center justify-between">
-            <span className="text-white/40">Global Progress Contribution</span>
-            <span className="font-mono text-neon-cyan">+0.00004%</span>
+            <span className="text-white/40">Chloe AI Impact Score</span>
+            <span className="font-mono text-neon-cyan">{session?.beforeData?.complexityScore || 50}/100</span>
           </div>
         </div>
 
