@@ -67,12 +67,17 @@
   .glass-card {
     background-color: rgb(var(--bg-panel) / var(--alpha-panel));
     border-color: rgb(var(--border-glass) / var(--alpha-border));
-    @apply backdrop-blur-2xl rounded-3xl overflow-hidden shadow-2xl transition-all duration-500;
+    @apply backdrop-blur-3xl rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 relative;
+  }
+
+  .glass-card::before {
+    content: '';
+    @apply absolute inset-0 rounded-3xl pointer-events-none border border-white/5 opacity-50;
   }
 
   .glass-card:hover {
-    border-color: rgb(var(--color-primary) / 0.2);
-    box-shadow: 0 0 40px rgb(var(--color-primary) / 0.1);
+    border-color: rgb(var(--color-primary) / 0.3);
+    box-shadow: 0 0 50px rgb(var(--color-primary) / 0.15);
   }
 
   .eco-pulse {
@@ -135,6 +140,25 @@
   @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
+  }
+
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 15s ease infinite;
+  }
+
+  @keyframes gradient-x {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .neon-pulse {
+    animation: neon-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes neon-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgb(var(--color-primary) / 0.5); }
+    50% { transform: scale(1.05); box-shadow: 0 0 25px rgb(var(--color-primary) / 0.8); }
   }
 }
 

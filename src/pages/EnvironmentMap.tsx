@@ -201,36 +201,47 @@ const MapInner = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto h-[calc(100vh-140px)] flex flex-col relative">
-      <div className="flex flex-col md:flex-row justify-between items-end gap-4">
-        <div className="flex-1 w-full">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, staggerChildren: 0.1 }}
+        className="flex flex-col md:flex-row justify-between items-end gap-4 relative z-[100]"
+      >
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex-1 w-full">
           <h1 className="text-4xl font-black tracking-tight mb-2 flex items-center gap-3 text-txt-primary uppercase italic">
             <MapPin className="text-neon-cyan" /> Live Impact Map
           </h1>
           <PlacesAutocomplete onPlaceSelect={handlePlaceSelect} />
-        </div>
-        <div className="flex gap-3">
-          <button
+        </motion.div>
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex gap-3">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setSolarMode(!solarMode)}
             className={`btn-secondary flex items-center gap-2 py-2 px-4 border rounded-2xl transition-all ${
-              solarMode ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' : 'bg-txt-primary/5 border-dark-border/10 text-txt-muted'
+              solarMode ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.5)]' : 'bg-txt-primary/5 border-dark-border/10 text-txt-muted hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]'
             }`}
           >
             <Sun size={18} /> Solar Tool
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => map?.panTo(center)}
-            className="btn-secondary flex items-center gap-2 py-2 px-4 bg-neon-green/10 border-neon-green/20 text-neon-green hover:bg-neon-green/20 rounded-2xl border transition-all"
+            className="btn-secondary flex items-center gap-2 py-2 px-4 bg-neon-green/10 border-neon-green/20 text-neon-green hover:bg-neon-green/20 hover:shadow-[0_0_20px_rgba(57,255,20,0.4)] rounded-2xl border transition-all"
           >
             <Navigation size={18} />
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setShowImpact(true)}
-            className="btn-secondary flex items-center gap-2 py-2 px-4 bg-neon-cyan/10 border-neon-cyan/20 text-neon-cyan hover:bg-neon-cyan/20 rounded-2xl border transition-all"
+            className="btn-secondary flex items-center gap-2 py-2 px-4 bg-neon-cyan/10 border-neon-cyan/20 text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_20px_rgba(0,255,255,0.4)] rounded-2xl border transition-all"
           >
             <PieChart size={18} />
-          </button>
-        </div>
-      </div>
+          </motion.button>
+        </motion.div>
+      </motion.div>
 
       <div className="flex-1 glass-card overflow-hidden border-dark-border/10 relative z-0 rounded-[2.5rem] min-h-[500px]">
         <Map
@@ -265,7 +276,7 @@ const MapInner = () => {
             const pm25 = pm25Param?.lastValue ?? 30;
             return (
               <AdvancedMarker key={station.id} position={{ lat: station.coordinates.latitude, lng: station.coordinates.longitude }}>
-                 <div className="w-8 h-8 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-[10px] font-black text-black" style={{ backgroundColor: aqiColor(pm25) }}>
+                 <div className="w-8 h-8 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-[10px] font-black text-black neon-pulse" style={{ backgroundColor: aqiColor(pm25) }}>
                     {pm25.toFixed(0)}
                  </div>
               </AdvancedMarker>
@@ -274,12 +285,20 @@ const MapInner = () => {
 
           {selectedSolarData && (
              <AdvancedMarker position={{ lat: selectedSolarData.lat, lng: selectedSolarData.lng }}>
-               <div className="bg-black/90 border border-yellow-400 text-yellow-400 p-3 rounded-xl backdrop-blur-md shadow-[0_0_15px_rgba(250,204,21,0.5)]">
-                 <div className="font-black flex items-center gap-2"><Sun size={14}/> Solar Potential</div>
-                 <div className="text-xs text-white/80 mt-1">Panels: <b className="text-white">{selectedSolarData.solarPanels}</b></div>
-                 <div className="text-xs text-white/80">Sunlight: <b className="text-white">{selectedSolarData.sunlightHoursPerYear} hr/yr</b></div>
-                 <div className="text-xs text-white/80">Offset: <b className="text-white">{selectedSolarData.carbonOffsetTonsPerYear} tons CO2/yr</b></div>
-               </div>
+               <AnimatePresence>
+                 <motion.div 
+                   initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                   animate={{ opacity: 1, scale: 1, y: 0 }}
+                   exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                   transition={{ type: 'spring', bounce: 0.5 }}
+                   className="bg-black/90 border border-yellow-400 text-yellow-400 p-3 rounded-xl backdrop-blur-md shadow-[0_0_25px_rgba(250,204,21,0.6)]"
+                 >
+                   <div className="font-black flex items-center gap-2"><Sun size={14}/> Solar Potential</div>
+                   <div className="text-xs text-white/80 mt-1">Panels: <b className="text-white">{selectedSolarData.solarPanels}</b></div>
+                   <div className="text-xs text-white/80">Sunlight: <b className="text-white">{selectedSolarData.sunlightHoursPerYear} hr/yr</b></div>
+                   <div className="text-xs text-white/80">Offset: <b className="text-white">{selectedSolarData.carbonOffsetTonsPerYear} tons CO2/yr</b></div>
+                 </motion.div>
+               </AnimatePresence>
              </AdvancedMarker>
           )}
 
