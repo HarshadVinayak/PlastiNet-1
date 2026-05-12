@@ -29,6 +29,8 @@ const Ambiente = lazy(() => import('./pages/Ambiente'));
 const Wallet = lazy(() => import('./pages/Wallet'));
 const Redeem = lazy(() => import('./pages/Redeem'));
 const QuotaDashboard = lazy(() => import('./pages/QuotaDashboard'));
+const UpcycleGuide = lazy(() => import('./pages/UpcycleGuide'));
+const RecycleGuide = lazy(() => import('./pages/RecycleGuide'));
 
 function App() {
   const { initialized, initialize, isAuthenticated, profile, loading } = useAuthStore();
@@ -144,6 +146,8 @@ function App() {
             <Route path="/wallet" element={<Wallet />} />
             <Route path="/redeem" element={<Redeem />} />
             <Route path="/telemetry" element={<QuotaDashboard />} />
+            <Route path="/upcycle-guide" element={<UpcycleGuide />} />
+            <Route path="/recycle-guide" element={<RecycleGuide />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Route>
         </Routes>

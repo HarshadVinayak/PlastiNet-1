@@ -257,44 +257,47 @@ const AIResult = () => {
       {/* 3-Step Plan / Verification Details */}
       {!isVerification ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* REDUCE — keeps modal with detailed steps */}
           <ActionCard 
             variants={item}
             icon={<MinusCircle className="text-red-400" />}
             title="Reduce"
+            color="border-red-500/20"
+            steps={dynamicTips?.reduce || ["Switch to reusable alternative", "Avoid single-use packaging"]}
+            onStepClick={(_step: string) => setSelectedIdea({
+              title: "Reduce Strategy",
+              description: "The most effective way to manage waste is to not create it in the first place.",
+              steps: dynamicTips?.reduce || ["Switch to glass or stainless steel containers.", "Buy in bulk to avoid small plastic packaging.", "Request 'no plastic cutlery' on delivery apps."],
+              color: "text-red-400"
+            })}
             onClick={() => setSelectedIdea({
               title: "Reduce Strategy",
               description: "The most effective way to manage waste is to not create it in the first place.",
               steps: dynamicTips?.reduce || ["Switch to glass or stainless steel containers.", "Buy in bulk to avoid small plastic packaging.", "Request 'no plastic cutlery' on delivery apps."],
               color: "text-red-400"
             })}
-            steps={dynamicTips?.reduce || ["Switch to reusable alternative", "Avoid single-use packaging"]}
-            color="border-red-500/20"
           />
+          {/* REUSE — navigates to full DIY UpcycleGuide page */}
           <ActionCard 
             variants={item}
             icon={<RefreshCcw className="text-blue-400" />}
             title="Reuse"
-            onClick={() => setSelectedIdea({
-              title: "Reuse Masterclass",
-              description: "Give your items a second life through creative upcycling.",
-              steps: dynamicTips?.reuse || ["Clean the container thoroughly with non-toxic soap.", "Repurpose creatively as a storage or planter.", "Share upcycling ideas with the community."],
-              color: "text-blue-400"
-            })}
-            steps={dynamicTips?.reuse || ["Repurpose creatively", "Share with community"]}
             color="border-blue-500/20"
+            steps={dynamicTips?.reuse || ["Repurpose creatively", "Share with community"]}
+            badge="Tap an idea →"
+            onStepClick={(stepText: string) => navigate('/upcycle-guide', { state: { itemType: session?.beforeData?.type || 'Plastic Item', idea: stepText } })}
+            onClick={() => navigate('/upcycle-guide', { state: { itemType: session?.beforeData?.type || 'Plastic Item', idea: dynamicTips?.reuse?.[0] || 'Creative upcycling project' } })}
           />
+          {/* RECYCLE — navigates to RecycleGuide with links */}
           <ActionCard 
             variants={item}
             icon={<Recycle className="text-neon-green" />}
             title="Recycle"
-            onClick={() => setSelectedIdea({
-              title: "Correct Recycling",
-              description: "Recycling only works if it is done cleanly and correctly.",
-              steps: dynamicTips?.recycle || ["Rinse out all food residue immediately.", "Crush bottles to save space in transport.", "Drop only in verified Yellow Bins or Sector Hubs."],
-              color: "text-neon-green"
-            })}
-            steps={dynamicTips?.recycle || ["Rinse & crush", "Drop in yellow bin"]}
             color="border-neon-green/20"
+            steps={dynamicTips?.recycle || ["Find recycling centers", "Drop in yellow bin"]}
+            badge="Links & Programs →"
+            onStepClick={() => navigate('/recycle-guide', { state: { itemType: session?.beforeData?.type || 'Plastic Item', classification: session?.beforeData?.classification || 'Plastic' } })}
+            onClick={() => navigate('/recycle-guide', { state: { itemType: session?.beforeData?.type || 'Plastic Item', classification: session?.beforeData?.classification || 'Plastic' } })}
           />
         </div>
       ) : (
@@ -477,27 +480,41 @@ const AIResult = () => {
   );
 };
 
-const ActionCard = ({ icon, title, steps, color, variants, onClick }: any) => (
+const ActionCard = ({ icon, title, steps, color, badge, variants, onClick, onStepClick }: any) => (
   <motion.div 
     variants={variants} 
-    onClick={onClick}
-    className={`glass-card p-6 border ${color} hover:scale-[1.02] transition-transform cursor-pointer group relative overflow-hidden`}
+    className={`glass-card p-6 border ${color} transition-transform`}
   >
-    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity">
-      <ArrowRight size={40} className="text-white" />
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-white/5 rounded-lg">{icon}</div>
+        <h4 className="text-xl font-bold">{title}</h4>
+      </div>
+      {badge && (
+        <span className="text-[10px] font-black uppercase tracking-widest text-neon-green border border-neon-green/30 px-2 py-1 rounded-full">
+          {badge}
+        </span>
+      )}
     </div>
-    <div className="flex items-center gap-3 mb-4">
-      <div className="p-2 bg-white/5 rounded-lg group-hover:scale-110 transition-transform">{icon}</div>
-      <h4 className="text-xl font-bold group-hover:text-white transition-colors">{title}</h4>
-    </div>
-    <ul className="space-y-3 relative z-10">
+    <ul className="space-y-3">
       {steps.map((step: string, i: number) => (
-        <li key={i} className="flex gap-2 text-sm text-white/60">
-          <span className="text-white/20">{i + 1}.</span>
-          {step}
+        <li
+          key={i}
+          onClick={() => onStepClick ? onStepClick(step) : onClick?.()}
+          className="flex gap-2 items-start text-sm text-white/60 hover:text-white hover:bg-white/5 rounded-lg p-2 -mx-2 cursor-pointer group transition-all"
+        >
+          <span className="text-white/20 group-hover:text-neon-green transition-colors font-bold flex-shrink-0">{i + 1}.</span>
+          <span className="leading-snug">{step}</span>
+          <ArrowRight size={14} className="ml-auto flex-shrink-0 opacity-0 group-hover:opacity-100 text-neon-green transition-all" />
         </li>
       ))}
     </ul>
+    <button
+      onClick={onClick}
+      className="mt-4 w-full text-center text-xs text-white/30 hover:text-white/60 transition-colors pt-3 border-t border-white/5"
+    >
+      View all {title} options →
+    </button>
   </motion.div>
 );
 
