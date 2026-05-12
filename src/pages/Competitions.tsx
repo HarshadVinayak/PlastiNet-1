@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Trophy, Swords, Zap, ChevronRight, MapPin, Loader2, BarChart3 } from 'lucide-react';
+import { Trophy, Swords, Zap, ChevronRight, MapPin, Loader2, BarChart3, Activity } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -16,35 +16,57 @@ interface SectorStat {
 const Competitions = () => {
   const { locationLabel, status } = useGPS();
   const [sectors, setSectors] = useState<SectorStat[]>([]);
+  const [timeline, setTimeline] = useState<any[]>([]);
+  const [userStreak, setUserStreak] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSectors = async () => {
+    const fetchData = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Fetch Sectors
+      const { data: sectorData } = await supabase
         .from('sector_stats')
         .select('*')
         .order('total_kg', { ascending: false });
+      if (sectorData) setSectors(sectorData);
 
-      if (error) {
-        toast.error('Failed to load sector stats');
-      } else if (data) {
-        setSectors(data);
+      // Fetch Timeline
+      const { data: timelineData } = await supabase
+        .from('competition_timeline')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (timelineData) setTimeline(timelineData);
+
+      // Fetch User Streak
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('streak_count')
+          .eq('id', user.id)
+          .single();
+        if (profile) setUserStreak(profile.streak_count);
       }
+
       setLoading(false);
     };
 
-    fetchSectors();
+    fetchData();
 
-    // Subscribe to realtime updates for sector stats
+    // Subscribe to realtime updates
     const channel = supabase
-      .channel('sector-stats-realtime')
+      .channel('competitions-realtime')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'sector_stats' },
-        () => {
-          fetchSectors();
-        }
+        () => fetchData()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'competition_timeline' },
+        () => fetchData()
       )
       .subscribe();
 
@@ -63,7 +85,15 @@ const Competitions = () => {
       exit={{ opacity: 0 }}
       className="max-w-5xl mx-auto space-y-8"
     >
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-3 px-4 py-2 bg-neon-cyan/10 rounded-xl border border-neon-cyan/20">
+          <Zap size={20} className="text-neon-cyan eco-pulse" />
+          <div className="flex flex-col">
+            <span className="text-[8px] font-black uppercase text-neon-cyan tracking-widest">Active Streak</span>
+            <span className="text-sm font-black text-txt-primary leading-tight">{userStreak} Days</span>
+          </div>
+        </div>
+
         <Link 
           to="/org-dashboard" 
           className="flex items-center gap-2 px-4 py-2 bg-txt-primary/5 hover:bg-txt-primary/10 rounded-xl border border-dark-border/10 transition-all group"
@@ -87,6 +117,26 @@ const Competitions = () => {
             <>Compete against neighboring communities to earn massive PLC multipliers and unlock civic upgrades.</>
           )}
         </p>
+      </div>
+
+      {/* Live Timeline Section */}
+      <div className="glass-card p-6 border-white/5 bg-black/20 mb-8">
+        <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-txt-muted mb-6 flex items-center gap-3">
+          <Activity size={14} className="text-neon-green" /> Live Battle Timeline
+        </h3>
+        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+          {timeline.length > 0 ? (
+            timeline.map((item) => (
+              <div key={item.id} className="shrink-0 flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl border border-white/5 animate-fade-in">
+                <div className={`w-2 h-2 rounded-full ${item.type === 'milestone' ? 'bg-neon-cyan' : 'bg-neon-green'} shadow-[0_0_8px_currentColor]`} />
+                <span className="text-xs font-bold text-txt-primary">{item.content}</span>
+                <span className="text-[8px] text-txt-muted font-mono">{new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            ))
+          ) : (
+            <p className="text-[10px] text-txt-muted/40 uppercase font-black tracking-widest py-2">Waiting for next milestone...</p>
+          )}
+        </div>
       </div>
 
       {loading ? (

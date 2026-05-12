@@ -10,14 +10,17 @@ import { TransformationSlider } from '../components/ui/TransformationSlider';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import ChloeSearch from '../components/ui/ChloeSearch';
+import EventTimer from '../components/ui/EventTimer';
 import { youtubeService } from '../services/youtube';
-
 
 const Home = () => {
   const { user } = useAuthStore();
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8 md:space-y-12">
+      {/* Real-time Event Countdown */}
+      <EventTimer />
+
       {/* Dynamic Control Header */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <motion.div 
