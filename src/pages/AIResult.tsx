@@ -161,17 +161,38 @@ const AIResult = () => {
     >
       {/* Header Result */}
       <motion.div variants={item} className="flex flex-col md:flex-row gap-8 items-start">
-        <div className="w-full md:w-1/3 glass-card p-4 aspect-square relative overflow-hidden group">
-          <div className="absolute inset-0 bg-neon-green/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="w-full h-full bg-white/5 rounded-xl flex items-center justify-center text-white/20">
-            {isApproved ? <CheckCircle2 size={64} className="text-neon-green" /> : 
-             verificationStatus === 'DELAYED_REVIEW' ? <Info size={64} className="text-yellow-400" /> :
-             <AlertTriangle size={64} className="text-red-500" />}
-          </div>
-          <div className="absolute bottom-6 left-6 right-6">
-            <span className={`px-3 py-1 text-black text-xs font-black rounded-full uppercase tracking-widest ${isApproved ? 'bg-neon-green' : verificationStatus === 'DELAYED_REVIEW' ? 'bg-yellow-400' : 'bg-red-500 text-white'}`}>
-              {step === 'BEFORE' ? 'Initial Scan' : step === 'DURING' ? 'Action Captured' : 'Final Proof'} by Chloe AI
-            </span>
+        <div className="w-full md:w-1/3 glass-card p-2 aspect-square relative overflow-hidden group">
+          {session?.beforeImage ? (
+            <img 
+              src={session.beforeImage} 
+              alt="Scanned item" 
+              className="w-full h-full object-cover rounded-xl"
+            />
+          ) : (
+            <div className="w-full h-full bg-white/5 rounded-xl flex items-center justify-center">
+              {isApproved ? <CheckCircle2 size={64} className="text-neon-green" /> : 
+               verificationStatus === 'DELAYED_REVIEW' ? <Info size={64} className="text-yellow-400" /> :
+               <AlertTriangle size={64} className="text-red-500" />}
+            </div>
+          )}
+          {/* AI verification overlay */}
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 rounded-b-xl">
+            <div className="flex items-center gap-2 mb-1">
+              <div className={`w-2 h-2 rounded-full ${isApproved ? 'bg-neon-green shadow-[0_0_6px_#39FF14]' : 'bg-red-500'}`} />
+              <span className="text-[10px] font-black uppercase tracking-widest text-neon-green">
+                {step === 'BEFORE' ? 'Initial Scan by Chloe AI' : step === 'DURING' ? 'Action Captured' : 'Final Proof'}
+              </span>
+            </div>
+            {session?.beforeData?.type && (
+              <p className="text-xs text-white/80 font-semibold leading-snug">
+                Identified: <span className="text-white font-bold">{session.beforeData.type}</span>
+              </p>
+            )}
+            {session?.beforeData?.environmentalImpact && (
+              <p className="text-[10px] text-white/50 mt-0.5 leading-tight line-clamp-2">
+                {session.beforeData.environmentalImpact}
+              </p>
+            )}
           </div>
         </div>
 

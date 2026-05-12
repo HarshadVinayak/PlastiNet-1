@@ -30,41 +30,36 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
   
   startSession: async (image, data) => {
     const { user } = useAuthStore.getState();
-    if (!user) return;
 
-    const newSession = {
-      user_id: user.id,
-      before_image: image,
-      classification: data.type || 'Plastic',
-      status: 'IN_PROGRESS',
+    // Always set the local session immediately — don't block on DB
+    const localSession = {
+      id: `local_${Date.now()}`,
+      user_id: user?.id || 'guest',
+      beforeImage: image,
+      beforeData: data,
+      duringImage: null,
+      duringData: null,
+      afterImage: null,
+      afterData: null,
+      status: 'IN_PROGRESS' as const,
+      total_reward: 0,
+      timestamp: Date.now(),
     };
+    set({ session: localSession });
 
-    const { data: dbSession, error } = await supabase
-      .from('impact_sessions')
-      .insert(newSession)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Failed to start session in DB:", error);
-      return;
-    }
-
-    set({
-      session: {
-        id: dbSession.id,
+    // Try to persist to DB in background (non-blocking)
+    if (user) {
+      supabase.from('impact_sessions').insert({
         user_id: user.id,
-        beforeImage: image,
-        beforeData: data,
-        duringImage: null,
-        duringData: null,
-        afterImage: null,
-        afterData: null,
+        before_image: image,
+        classification: data.type || 'Plastic',
         status: 'IN_PROGRESS',
-        total_reward: 0,
-        timestamp: Date.now(),
-      }
-    });
+      }).select().single().then(({ data: dbSession, error }) => {
+        if (!error && dbSession) {
+          set(state => state.session ? { session: { ...state.session, id: dbSession.id } } : {});
+        }
+      });
+    }
   },
 
   setDuring: async (image, data) => {
