@@ -170,12 +170,26 @@ const Profile = () => {
             <span>Joined {new Date(profile?.joined_at || Date.now()).toLocaleDateString()}</span>
           </div>
 
-          <div className="flex gap-4 justify-center md:justify-start">
+          <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+            <button 
+              onClick={() => toast("To install on iOS: Tap the Share icon at the bottom of Safari and select 'Add to Home Screen'", { icon: '🍎', duration: 5000 })}
+              className="px-4 py-3 bg-white/5 text-white font-bold rounded-xl border border-white/10 hover:border-white/30 transition-colors flex items-center gap-2 text-sm"
+            >
+              <Smartphone size={16} />
+              Download for iOS
+            </button>
+            <button 
+              onClick={() => toast.success("Android APK build instructions sent to email")}
+              className="px-4 py-3 bg-neon-green/10 text-neon-green font-bold rounded-xl border border-neon-green/30 hover:bg-neon-green hover:text-black transition-colors flex items-center gap-2 text-sm"
+            >
+              <Smartphone size={16} />
+              Download for Android
+            </button>
             <button 
               onClick={signOut}
-              className="px-6 py-3 bg-red-500/10 text-red-500 font-bold rounded-xl hover:bg-red-500 hover:text-white transition-colors flex items-center gap-2"
+              className="px-4 py-3 bg-red-500/10 text-red-500 font-bold rounded-xl hover:bg-red-500 hover:text-white transition-colors flex items-center gap-2 text-sm ml-auto md:ml-0"
             >
-              <LogOut size={18} />
+              <LogOut size={16} />
               Log Out
             </button>
           </div>
