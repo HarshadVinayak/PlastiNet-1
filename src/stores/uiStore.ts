@@ -6,14 +6,17 @@ type Theme = 'dark' | 'light' | 'classic' | 'system';
 interface UIState {
   isChloeOpen: boolean;
   isSearchOpen: boolean;
+  isMenuOpen: boolean;
   theme: Theme;
   isVoiceEnabled: boolean;
   chloeVoice: string;
   chloeModel: string;
   toggleChloe: () => void;
   toggleSearch: () => void;
+  toggleMenu: () => void;
   setChloeOpen: (open: boolean) => void;
   setSearchOpen: (open: boolean) => void;
+  setMenuOpen: (open: boolean) => void;
 
   setTheme: (theme: Theme) => void;
   applyTheme: (theme: Theme) => void;
@@ -27,14 +30,17 @@ export const useUIStore = create<UIState>()(
     (set, get) => ({
       isChloeOpen: false,
       isSearchOpen: false,
+      isMenuOpen: false,
       theme: 'dark',
       isVoiceEnabled: true,
       chloeVoice: 'Standard Female',
       chloeModel: 'Llama-3.3-70b-Versatile',
       toggleChloe: () => set((state) => ({ isChloeOpen: !state.isChloeOpen })),
       toggleSearch: () => set((state) => ({ isSearchOpen: !state.isSearchOpen })),
+      toggleMenu: () => set((state) => ({ isMenuOpen: !state.isMenuOpen })),
       setChloeOpen: (open) => set({ isChloeOpen: open }),
       setSearchOpen: (open) => set({ isSearchOpen: open }),
+      setMenuOpen: (open) => set({ isMenuOpen: open }),
 
       setVoiceEnabled: (enabled) => set({ isVoiceEnabled: enabled }),
       setChloeVoice: (voice) => set({ chloeVoice: voice }),

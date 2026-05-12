@@ -2,7 +2,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Home, Camera, ShoppingBag, Users, User, Leaf, Trophy, BarChart3, 
-  Map as MapIcon, PieChart, PlayCircle, Sparkles, History, Search, Wallet as WalletIcon
+  Map as MapIcon, PieChart, PlayCircle, Sparkles, History, Search, Wallet as WalletIcon,
+  Menu
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useRewardStore } from '../../stores/rewardStore';
@@ -15,6 +16,7 @@ const Navbar = () => {
   const balance = useRewardStore(state => state.balance);
   const toggleChloe = useUIStore(state => state.toggleChloe);
   const toggleSearch = useUIStore(state => state.toggleSearch);
+  const toggleMenu = useUIStore(state => state.toggleMenu);
 
   const subscription = useSubscriptionStore(state => state.subscription);
 
@@ -63,6 +65,13 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-1.5 md:gap-4 shrink-0">
+          <button 
+            onClick={toggleMenu}
+            className="lg:hidden p-2 bg-white/5 border border-white/10 text-txt-primary rounded-lg transition-all active:scale-95"
+          >
+            <Menu size={18} />
+          </button>
+
           <div className="hidden xs:block">
             <PremiumBadge tier={subscription?.plan} showText={false} />
           </div>
