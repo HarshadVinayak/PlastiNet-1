@@ -22,20 +22,29 @@ class AIProviderService {
       }
       throw new Error("No Gemini key");
     } catch (error) {
-      console.warn("Primary vision (Gemini) failed, trying SambaNova...", error);
+      console.warn("Primary vision (Gemini 2.5 Flash Lite) failed, trying SambaNova...", error);
       try {
-        // Backup: SambaNova Gemma 3
+        // Backup: SambaNova Llama-4 Scout (vision capable)
         if (CONFIG.API_KEYS.SAMBANOVA) {
           return await visionScan.sambaNova(base64Image, prompt);
         }
         throw new Error("No SambaNova key");
       } catch (sambaError) {
-        console.warn("SambaNova vision failed, trying OpenRouter...", sambaError);
-        // Fallback: OpenRouter
-        if (CONFIG.API_KEYS.OPENROUTER) {
-          return await visionScan.openRouter(base64Image, prompt);
+        console.warn("SambaNova vision failed, trying Cloud Vision...", sambaError);
+        try {
+          // Fallback: Google Cloud Vision REST API
+          if (CONFIG.API_KEYS.GOOGLE) {
+            return await visionScan.cloudVision(base64Image);
+          }
+          throw new Error("No Google key");
+        } catch (cloudErr) {
+          console.warn("Cloud Vision failed, trying OpenRouter...", cloudErr);
+          // Last resort: OpenRouter
+          if (CONFIG.API_KEYS.OPENROUTER) {
+            return await visionScan.openRouter(base64Image, prompt);
+          }
+          throw new Error("All vision providers failed or missing keys.");
         }
-        throw new Error("All vision providers failed or missing keys.");
       }
     }
   }

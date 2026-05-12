@@ -21,7 +21,7 @@ export const visionService = {
 
     try {
       const genAI = new GoogleGenerativeAI(CONFIG.API_KEYS.GEMINI);
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite-preview-06-17' });
 
       const mimeType = (imageUri.match(/data:([^;]+);/)?.[1] || 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/webp';
 
