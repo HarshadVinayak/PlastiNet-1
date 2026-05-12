@@ -207,7 +207,7 @@ const Community = () => {
       </motion.div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center justify-start md:justify-center gap-2 md:gap-4 mb-8 md:mb-12 sticky top-20 z-30 py-3 md:py-4 bg-black/40 backdrop-blur-xl rounded-2xl md:rounded-full border border-white/5 mx-auto max-w-2xl px-2 md:px-4 shadow-2xl overflow-x-auto no-scrollbar whitespace-nowrap">
+      <div className="flex items-center justify-start md:justify-center gap-2 md:gap-4 mb-8 md:mb-12 sticky top-20 z-30 py-3 md:py-4 bg-black/40 backdrop-blur-xl rounded-2xl md:rounded-full border border-white/5 mx-4 md:mx-auto max-w-2xl px-4 md:px-6 shadow-2xl overflow-x-auto no-scrollbar whitespace-nowrap">
         {[
           { id: 'feed', icon: LayoutGrid, label: 'Feed' },
           { id: 'reels', icon: PlayCircle, label: 'Reels' },
@@ -217,7 +217,7 @@ const Community = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className="relative flex items-center gap-2 px-4 md:px-6 py-2 rounded-full transition-all group shrink-0"
+            className="relative flex items-center gap-2 px-5 md:px-6 py-2.5 rounded-full transition-all group shrink-0"
           >
             {activeTab === tab.id && (
               <motion.div 
@@ -227,7 +227,7 @@ const Community = () => {
               />
             )}
             <tab.icon size={16} className={`relative z-10 md:w-[18px] md:h-[18px] ${activeTab === tab.id ? 'text-black' : 'text-white/40 group-hover:text-white'}`} />
-            <span className={`relative z-10 text-[9px] md:text-[10px] font-black uppercase tracking-widest ${activeTab === tab.id ? 'text-black' : 'text-white/40 group-hover:text-white'}`}>
+            <span className={`relative z-10 text-[10px] md:text-[10px] font-black uppercase tracking-widest ${activeTab === tab.id ? 'text-black' : 'text-white/40 group-hover:text-white'}`}>
               {tab.label}
             </span>
           </button>
