@@ -16,35 +16,26 @@ class AIProviderService {
 
   async runVisionScan(base64Image: string, prompt: string) {
     try {
-      // Primary: Gemini 2.5 Flash Lite
+      // Primary: Gemini 2.5 Flash Lite (confirmed working)
       if (CONFIG.API_KEYS.GEMINI) {
         return await visionScan.gemini(base64Image, prompt);
       }
       throw new Error("No Gemini key");
     } catch (error) {
-      console.warn("Primary vision (Gemini 2.5 Flash Lite) failed, trying SambaNova...", error);
+      console.warn("Gemini vision failed, trying Groq Vision...", error);
       try {
-        // Backup: SambaNova Llama-4 Scout (vision capable)
+        // Backup: Groq Llama-4 Scout Vision (confirmed working)
+        if (CONFIG.API_KEYS.GROQ) {
+          return await visionScan.groq(base64Image, prompt);
+        }
+        throw new Error("No Groq key");
+      } catch (groqError) {
+        console.warn("Groq vision failed, trying SambaNova...", groqError);
+        // Final fallback: SambaNova
         if (CONFIG.API_KEYS.SAMBANOVA) {
           return await visionScan.sambaNova(base64Image, prompt);
         }
-        throw new Error("No SambaNova key");
-      } catch (sambaError) {
-        console.warn("SambaNova vision failed, trying Cloud Vision...", sambaError);
-        try {
-          // Fallback: Google Cloud Vision REST API
-          if (CONFIG.API_KEYS.GOOGLE) {
-            return await visionScan.cloudVision(base64Image);
-          }
-          throw new Error("No Google key");
-        } catch (cloudErr) {
-          console.warn("Cloud Vision failed, trying OpenRouter...", cloudErr);
-          // Last resort: OpenRouter
-          if (CONFIG.API_KEYS.OPENROUTER) {
-            return await visionScan.openRouter(base64Image, prompt);
-          }
-          throw new Error("All vision providers failed or missing keys.");
-        }
+        throw new Error("All vision providers failed.");
       }
     }
   }
