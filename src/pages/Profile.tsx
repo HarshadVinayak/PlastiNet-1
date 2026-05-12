@@ -178,13 +178,14 @@ const Profile = () => {
               <Smartphone size={16} />
               Download for iOS
             </button>
-            <button 
-              onClick={() => toast.success("Android APK build instructions sent to email")}
+            <a 
+              href="/PlastiNet-v1.apk"
+              download
               className="px-4 py-3 bg-neon-green/10 text-neon-green font-bold rounded-xl border border-neon-green/30 hover:bg-neon-green hover:text-black transition-colors flex items-center gap-2 text-sm"
             >
               <Smartphone size={16} />
               Download for Android
-            </button>
+            </a>
             <button 
               onClick={signOut}
               className="px-4 py-3 bg-red-500/10 text-red-500 font-bold rounded-xl hover:bg-red-500 hover:text-white transition-colors flex items-center gap-2 text-sm ml-auto md:ml-0"
