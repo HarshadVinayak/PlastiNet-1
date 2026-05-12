@@ -111,6 +111,45 @@ export const useRewardStore = create<WalletState>((set, get) => ({
     }
 
     await get().fetchWallet();
+
+    // REAL-WORLD SIDE EFFECTS: Streaks and Timeline
+    if (['EARN', 'BONUS'].includes(type) && amount > 0) {
+      // 1. Update Real Streak
+      const today = new Date().toISOString().split('T')[0];
+      const { data: profile } = await supabase
+        .from('users')
+        .select('streak_count, last_streak_date, username')
+        .eq('id', user.id)
+        .single();
+
+      if (profile && profile.last_streak_date !== today) {
+        let newStreak = 1;
+        if (profile.last_streak_date) {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const yesterdayStr = yesterday.toISOString().split('T')[0];
+          if (profile.last_streak_date === yesterdayStr) {
+            newStreak = (profile.streak_count || 0) + 1;
+          }
+        }
+        
+        await supabase.from('users')
+          .update({ streak_count: newStreak, last_streak_date: today })
+          .eq('id', user.id);
+
+        // 2. Post Real Milestone to Timeline
+        if (amount >= 50 || newStreak % 5 === 0) {
+          const content = newStreak % 5 === 0 
+            ? `${profile.username || 'A user'} just hit a ${newStreak}-day ECO STREAK! 🔥`
+            : `${profile.username || 'A user'} contributed ${amount} PLC to their sector! 🌍`;
+          
+          await supabase.from('competition_timeline').insert({
+            content,
+            type: 'milestone'
+          });
+        }
+      }
+    }
   },
 
   spend: async (amount, description) => {
