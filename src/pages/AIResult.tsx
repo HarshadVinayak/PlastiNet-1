@@ -1,0 +1,468 @@
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  CheckCircle2, 
+  Recycle, 
+  RefreshCcw, 
+  MinusCircle, 
+  ArrowRight, 
+  Info, 
+  Coins,
+  ChevronRight,
+  Share2,
+  ShieldCheck,
+  AlertTriangle,
+  Zap,
+  X,
+  Loader2
+} from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import TransformationSlider from '../components/ui/TransformationSlider';
+import { useVerificationStore } from '../stores/verificationStore';
+import { useRewardStore } from '../stores/rewardStore';
+import { useHistoryStore } from '../stores/historyStore';
+import { useEffect, useState, Suspense, lazy } from 'react';
+import { compareScenes } from '../ai/verification/sceneComparator';
+import toast from 'react-hot-toast';
+
+const AIResult = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const step = location.state?.step || (location.state?.isVerification ? 'AFTER' : 'BEFORE');
+  const isVerification = step === 'AFTER';
+  const afterImage = location.state?.afterImage || null;
+  const afterAnalysis = location.state?.afterAnalysis || null;
+  
+  const session = useVerificationStore(state => state.session);
+  const clearSession = useVerificationStore(state => state.clearSession);
+  const { addTransaction } = useRewardStore();
+  const { addItem: logHistory } = useHistoryStore();
+  
+  const [selectedIdea, setSelectedIdea] = useState<any>(null);
+  const [sceneData, setSceneData] = useState<any>(null);
+  const [rewardProcessed, setRewardProcessed] = useState(false);
+  const [scanLogged, setScanLogged] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<'APPROVED' | 'DELAYED_REVIEW' | 'REJECTED' | null>(null);
+  const [blueprint, setBlueprint] = useState<any>(null);
+
+  useEffect(() => {
+    const processRewards = async () => {
+      if (rewardProcessed) return;
+
+      if (step === 'BEFORE' && session?.beforeData && !scanLogged) {
+        await addTransaction('EARN', 5, `Phase 1: ${session.beforeData.type} Detection`, session.id);
+        await logHistory({
+          type: 'SCAN',
+          title: 'New Plastic Detected',
+          description: `Chloe identified a ${session.beforeData.type} container.`,
+          metadata: { type: session.beforeData.type, plc: 5 }
+        });
+        setScanLogged(true);
+        setRewardProcessed(true);
+      } else if (step === 'DURING' && session?.duringImage) {
+        await addTransaction('EARN', 5, `Phase 2: Action Captured (Right Now)`, session.id);
+        await logHistory({
+          type: 'SOCIAL',
+          title: 'Environmental Action',
+          description: 'You were captured taking action in the field!',
+          metadata: { phase: 'DURING', plc: 5 }
+        });
+        setRewardProcessed(true);
+        toast.success("Action shot verified! +5 PLC");
+      } else if (step === 'AFTER' && isVerification && session && afterImage) {
+        try {
+          const sceneComparison = await compareScenes(session.beforeImage!, afterImage);
+          setSceneData(sceneComparison);
+          
+          // Final phase reward
+          await addTransaction('EARN', 10, `Phase 3: Final Transformation Verified`, session.id);
+          await logHistory({
+            type: 'REWARD',
+            title: 'Impact Cycle Complete',
+            description: 'You successfully recycled and verified a waste object.',
+            metadata: { phase: 'AFTER', plc: 10, similarity: sceneComparison.similarityScore }
+          });
+          setVerificationStatus('APPROVED');
+          toast.success("Cleanup verified! +10 PLC (Lifecycle Complete)");
+          setRewardProcessed(true);
+        } catch (error) {
+          console.error("Verification processing failed", error);
+        }
+      }
+    };
+    
+    const generateBlueprint = async () => {
+      if (session?.beforeData?.type) {
+        setBlueprint({
+          title: `Smart ${session.beforeData.type} Organizer`,
+          difficulty: 'Medium',
+          materials: ['Strong Scissors', 'Adhesive Tape', 'Acrylic Paint'],
+          steps: [
+            'Rinse the container thoroughly with warm soapy water.',
+            'Measure and cut the top section at a 45-degree angle.',
+            'Smooth the edges using a fine-grit sandpaper or heat.',
+            'Decorate with eco-friendly paint to match your room.'
+          ],
+          environmentalValue: 'Prevents microplastic shedding and extends object lifecycle by 2+ years.'
+        });
+      }
+    };
+    
+    processRewards();
+    generateBlueprint();
+  }, [step, isVerification, session, afterImage, rewardProcessed, scanLogged]);
+
+  const isApproved = step === 'AFTER' ? verificationStatus === 'APPROVED' : true;
+  const displayReward = step === 'BEFORE' ? 5 : step === 'DURING' ? 5 : 10;
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
+  return (
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="max-w-5xl mx-auto space-y-8"
+    >
+      {/* Header Result */}
+      <motion.div variants={item} className="flex flex-col md:flex-row gap-8 items-start">
+        <div className="w-full md:w-1/3 glass-card p-4 aspect-square relative overflow-hidden group">
+          <div className="absolute inset-0 bg-neon-green/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="w-full h-full bg-white/5 rounded-xl flex items-center justify-center text-white/20">
+            {isApproved ? <CheckCircle2 size={64} className="text-neon-green" /> : 
+             verificationStatus === 'DELAYED_REVIEW' ? <Info size={64} className="text-yellow-400" /> :
+             <AlertTriangle size={64} className="text-red-500" />}
+          </div>
+          <div className="absolute bottom-6 left-6 right-6">
+            <span className={`px-3 py-1 text-black text-xs font-black rounded-full uppercase tracking-widest ${isApproved ? 'bg-neon-green' : verificationStatus === 'DELAYED_REVIEW' ? 'bg-yellow-400' : 'bg-red-500 text-white'}`}>
+              {step === 'BEFORE' ? 'Initial Scan' : step === 'DURING' ? 'Action Captured' : 'Final Proof'} by Chloe AI
+            </span>
+          </div>
+        </div>
+
+        <div className="flex-1 space-y-4">
+          <h1 className="text-5xl font-black tracking-tighter italic uppercase">
+            {step === 'BEFORE' 
+              ? `${session?.beforeData?.type || 'Plastic Waste'} detected` 
+              : step === 'DURING'
+              ? 'Action In Progress'
+              : 'Recycling Verified'}
+          </h1>
+          <div className="flex gap-4">
+            <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl">
+              <p className="text-[10px] text-white/40 uppercase font-bold">Category</p>
+              <p className="font-bold text-neon-green">{session?.beforeData?.classification || 'Type 1 (PETE)'}</p>
+            </div>
+            <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl">
+              <p className="text-[10px] text-white/40 uppercase font-bold">Integrity</p>
+              <p className="font-bold text-neon-cyan">High Trust</p>
+            </div>
+          </div>
+          
+          {step === 'AFTER' && session?.beforeImage && afterImage ? (
+            <div className="py-4">
+              <TransformationSlider 
+                before={session.beforeImage} 
+                after={afterImage} 
+              />
+            </div>
+          ) : step === 'DURING' && session?.duringImage ? (
+            <div className="py-4 glass-card p-2 border-neon-cyan/20">
+              <img src={session.duringImage} alt="Action" className="w-full h-64 object-cover rounded-xl" />
+              <p className="text-[10px] text-center font-black uppercase text-neon-cyan tracking-widest mt-2">Verified Action Capture</p>
+            </div>
+          ) : (
+            <p className="text-white/60 leading-relaxed text-lg italic">
+              {step === 'BEFORE' 
+                ? "Great find! Chloe has identified the material. Now, show us the action—capture a photo of people working or recycling this item right now!"
+                : "Action confirmed. The final step is to show the finished, clean environment or the item inside the recycling hub."}
+            </p>
+          )}
+          
+          <div className="flex gap-4 pt-4">
+            {verificationStatus !== 'REJECTED' && (
+              <div className={`flex items-center gap-2 text-2xl font-black ${verificationStatus === 'DELAYED_REVIEW' ? 'text-yellow-400' : 'text-neon-green'}`}>
+                <img 
+                  src="/plasticoin.png" 
+                  alt="PLC" 
+                  onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/7036/7036798.png'; }}
+                  className="w-8 h-8 object-contain" 
+                />
+                +{displayReward} PLC earned
+              </div>
+            )}
+            <button className="btn-secondary px-4 py-2">
+              <Share2 size={20} />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* 3-Step Plan / Verification Details */}
+      {!isVerification ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <ActionCard 
+            variants={item}
+            icon={<MinusCircle className="text-red-400" />}
+            title="Reduce"
+            onClick={() => setSelectedIdea({
+              title: "Reduce Strategy",
+              description: "The most effective way to manage waste is to not create it in the first place.",
+              steps: ["Switch to glass or stainless steel containers.", "Buy in bulk to avoid small plastic packaging.", "Request 'no plastic cutlery' on delivery apps."],
+              color: "text-red-400"
+            })}
+            steps={[
+              "Switch to a glass bottle",
+              "Avoid bulk plastic packs"
+            ]}
+            color="border-red-500/20"
+          />
+          <ActionCard 
+            variants={item}
+            icon={<RefreshCcw className="text-blue-400" />}
+            title="Reuse"
+            onClick={() => setSelectedIdea({
+              title: "Reuse Masterclass",
+              description: "Give your items a second life through creative upcycling.",
+              steps: ["Clean the container thoroughly with non-toxic soap.", "Drill small holes if creating a planter for drainage.", "Paint or wrap in recycled fabric for a premium look."],
+              color: "text-blue-400"
+            })}
+            steps={[
+              "Create a DIY planter",
+              "Small parts organizer"
+            ]}
+            color="border-blue-500/20"
+          />
+          <ActionCard 
+            variants={item}
+            icon={<Recycle className="text-neon-green" />}
+            title="Recycle"
+            onClick={() => setSelectedIdea({
+              title: "Correct Recycling",
+              description: "Recycling only works if it is done cleanly and correctly.",
+              steps: ["Rinse out all food residue immediately.", "Crush bottles to save space in transport.", "Drop only in verified Yellow Bins or Sector Hubs."],
+              color: "text-neon-green"
+            })}
+            steps={[
+              "Rinse & crush",
+              "Drop in yellow bin"
+            ]}
+            color="border-neon-green/20"
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <motion.div variants={item} className="glass-card p-8 border-neon-green/20 bg-neon-green/5 h-full">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-neon-green/10 rounded-2xl">
+                <ShieldCheck className="text-neon-green" />
+              </div>
+              <h3 className="text-2xl font-bold">Verification Analysis</h3>
+            </div>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-white/40">Scene Consistency</span>
+                  <span className="text-neon-green font-bold">{sceneData?.similarityScore || 0}%</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-white/40">Object Removal</span>
+                  <span className="text-neon-green font-bold">{afterAnalysis?.detectedAction || 'Unknown'}</span>
+                </div>
+              </div>
+              <p className="text-white/60 text-sm italic leading-relaxed border-t border-white/5 pt-4">
+                "{afterAnalysis?.reason || 'Chloe AI has confirmed the action.'}"
+              </p>
+            </div>
+          </motion.div>
+
+          {blueprint && (
+            <motion.div variants={item} className="glass-card p-8 border-neon-cyan/20 bg-neon-cyan/5 h-full">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-neon-cyan/10 rounded-2xl">
+                    <Zap className="text-neon-cyan" />
+                  </div>
+                  <h3 className="text-2xl font-bold">Reuse Blueprint</h3>
+                </div>
+                <span className="px-2 py-1 bg-white/10 rounded text-[10px] font-bold uppercase tracking-widest text-neon-cyan">
+                  {blueprint.difficulty}
+                </span>
+              </div>
+              <div className="space-y-4">
+                <h4 className="text-lg font-bold text-white">{blueprint.title}</h4>
+                <ul className="space-y-2">
+                  {blueprint.steps.slice(0, 3).map((step: string, i: number) => (
+                    <li key={i} className="text-sm text-white/60 flex gap-2">
+                      <span className="text-neon-cyan font-bold">{i+1}.</span> {step}
+                    </li>
+                  ))}
+                </ul>
+                <button className="text-neon-cyan text-sm font-bold flex items-center gap-1 hover:underline pt-2">
+                  View Full Instructions <ArrowRight size={14} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {/* Impact & Social */}
+      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="glass-card p-8 border-neon-cyan/20 bg-neon-cyan/5">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 bg-neon-cyan/10 rounded-2xl">
+              <Info className="text-neon-cyan" />
+            </div>
+            <h3 className="text-2xl font-bold">Environmental Impact</h3>
+          </div>
+          <p className="text-white/80 text-lg mb-6 leading-relaxed">
+            By recycling this single bottle, you prevent <span className="text-neon-cyan font-bold">0.5kg of CO2</span> from entering the atmosphere. 
+            If you do this for a year, you'll offset the energy used to charge your phone for <span className="text-neon-cyan font-bold">3,500 hours</span>.
+          </p>
+          <div className="p-4 bg-black/20 rounded-xl border border-white/5 flex items-center justify-between">
+            <span className="text-white/40">Global Progress Contribution</span>
+            <span className="font-mono text-neon-cyan">+0.00004%</span>
+          </div>
+        </div>
+
+        <div className="glass-card p-8 flex flex-col justify-between border-white/10">
+          <div>
+            <h3 className="text-2xl font-bold mb-2">
+              {step === 'BEFORE' ? 'Next: Action Shot' : step === 'DURING' ? 'Next: Final Proof' : 'Impact Complete'}
+            </h3>
+            <p className="text-white/60 mb-6">
+              {step === 'BEFORE' 
+                ? 'Capture people performing the recycling action right now to earn your next +5 PLC.' 
+                : step === 'DURING'
+                ? 'Finish the work and upload the final result to claim your final +10 PLC.'
+                : 'You have successfully completed the full impact lifecycle. 20 PLC added to your wallet.'}
+            </p>
+          </div>
+          <div className="space-y-4">
+            {step === 'AFTER' ? (
+              <Link to="/upload" className="w-full btn-primary py-4 text-xl">
+                Start New Impact
+              </Link>
+            ) : (
+              <Link to="/upload" className="w-full btn-primary py-4 text-xl bg-neon-cyan text-black">
+                {step === 'BEFORE' ? 'Capture "Right Now"' : 'Upload "After" Proof'}
+              </Link>
+            )}
+            <button 
+              onClick={async () => {
+                if (isVerification) {
+                  clearSession();
+                  navigate('/');
+                } else {
+                  toast.success("Syncing base rewards...");
+                  await addTransaction('BONUS', 2, 'Base Scanning Points (Fast-Track)');
+                  clearSession();
+                  navigate('/');
+                }
+              }}
+              className="w-full flex items-center justify-center gap-2 text-white/40 hover:text-white transition-colors group"
+            >
+              {isVerification ? 'Back to Dashboard' : 'Skip and collect base points'} 
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Idea Detail Modal Overlay */}
+      <AnimatePresence>
+        {selectedIdea && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+            onClick={() => setSelectedIdea(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="glass-card max-w-lg w-full p-10 border-white/10 relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setSelectedIdea(null)}
+                className="absolute top-6 right-6 text-white/40 hover:text-white"
+              >
+                <X size={24} />
+              </button>
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className={`p-4 rounded-3xl bg-white/5 ${selectedIdea.color}`}>
+                    <Info size={32} />
+                  </div>
+                  <h3 className="text-3xl font-black italic uppercase tracking-tighter">{selectedIdea.title}</h3>
+                </div>
+                
+                <p className="text-lg text-white/60 leading-relaxed italic">"{selectedIdea.description}"</p>
+                
+                <div className="space-y-4 pt-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Action Steps</h4>
+                  {selectedIdea.steps.map((s: string, i: number) => (
+                    <div key={i} className="flex gap-4 items-start bg-white/5 p-4 rounded-2xl border border-white/5">
+                      <span className={`font-black text-xl ${selectedIdea.color}`}>{i+1}</span>
+                      <p className="text-sm font-bold leading-relaxed">{s}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => setSelectedIdea(null)}
+                  className="w-full btn-primary py-4 mt-4 rounded-2xl"
+                >
+                  Got it
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
+const ActionCard = ({ icon, title, steps, color, variants, onClick }: any) => (
+  <motion.div 
+    variants={variants} 
+    onClick={onClick}
+    className={`glass-card p-6 border ${color} hover:scale-[1.02] transition-transform cursor-pointer group relative overflow-hidden`}
+  >
+    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity">
+      <ArrowRight size={40} className="text-white" />
+    </div>
+    <div className="flex items-center gap-3 mb-4">
+      <div className="p-2 bg-white/5 rounded-lg group-hover:scale-110 transition-transform">{icon}</div>
+      <h4 className="text-xl font-bold group-hover:text-white transition-colors">{title}</h4>
+    </div>
+    <ul className="space-y-3 relative z-10">
+      {steps.map((step: string, i: number) => (
+        <li key={i} className="flex gap-2 text-sm text-white/60">
+          <span className="text-white/20">{i + 1}.</span>
+          {step}
+        </li>
+      ))}
+    </ul>
+  </motion.div>
+);
+
+export default AIResult;

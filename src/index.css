@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: 57 255 20; /* Neon Green */
+  --color-secondary: 0 255 255; /* Cyan */
+  --bg-dark: 2 4 2;
+  --bg-panel: 10 20 10;
+  --border-glass: 255 255 255;
+  --text-primary: 255 255 255;
+  --text-secondary: 255 255 255;
+  --text-muted: 255 255 255;
+  --alpha-panel: 0.7;
+  --alpha-border: 0.05;
+  --alpha-text-secondary: 0.7;
+  --alpha-text-muted: 0.4;
+}
+
+:root.light {
+  --bg-dark: 248 250 252;
+  --bg-panel: 255 255 255;
+  --border-glass: 0 0 0;
+  --text-primary: 15 23 42;
+  --text-secondary: 71 85 105;
+  --text-muted: 148 163 184;
+  --color-primary: 22 163 74; /* Slightly darker green */
+  --alpha-panel: 0.8;
+  --alpha-border: 0.1;
+  --alpha-text-secondary: 1;
+  --alpha-text-muted: 1;
+}
+
+:root.classic-dark {
+  --bg-dark: 18 18 18;
+  --bg-panel: 30 30 30;
+  --border-glass: 42 42 42;
+  --text-primary: 224 224 224;
+  --text-secondary: 176 176 176;
+  --text-muted: 128 128 128;
+  --alpha-panel: 1;
+  --alpha-border: 1;
+  --alpha-text-secondary: 1;
+  --alpha-text-muted: 1;
+}
+
+@layer base {
+  body {
+    @apply bg-dark-deep text-txt-primary font-['Plus_Jakarta_Sans'] antialiased selection:bg-neon-green/30;
+    margin: 0;
+    min-height: 100vh;
+    background-image: 
+      radial-gradient(circle at 50% -20%, rgba(57, 255, 20, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 0% 100%, rgba(0, 255, 255, 0.05) 0%, transparent 40%);
+    background-attachment: fixed;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-['Outfit'] font-bold tracking-tighter text-txt-primary;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background-color: rgb(var(--bg-panel) / var(--alpha-panel));
+    border-color: rgb(var(--border-glass) / var(--alpha-border));
+    @apply backdrop-blur-2xl rounded-3xl overflow-hidden shadow-2xl transition-all duration-500;
+  }
+
+  .glass-card:hover {
+    border-color: rgb(var(--color-primary) / 0.2);
+    box-shadow: 0 0 40px rgb(var(--color-primary) / 0.1);
+  }
+
+  .eco-pulse {
+    animation: eco-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes eco-pulse {
+    0%, 100% { opacity: 1; filter: drop-shadow(0 0 5px rgb(var(--color-primary))); }
+    50% { opacity: 0.6; filter: drop-shadow(0 0 15px rgb(var(--color-primary))); }
+  }
+
+  .btn-primary {
+    background-color: rgb(var(--color-primary));
+    box-shadow: 0 0 20px rgb(var(--color-primary) / 0.3);
+    @apply px-8 py-4 text-black font-black uppercase tracking-widest text-[10px] rounded-2xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3;
+  }
+
+  .btn-secondary {
+    background-color: rgb(var(--text-primary) / 0.05);
+    border-color: rgb(var(--text-primary) / 0.1);
+    @apply px-8 py-4 backdrop-blur-md text-txt-primary font-black uppercase tracking-widest text-[10px] rounded-2xl border hover:bg-txt-primary/10 transition-all duration-300 flex items-center justify-center gap-3;
+  }
+
+  .nav-link {
+    color: rgb(var(--text-primary) / var(--alpha-text-muted));
+    @apply font-black uppercase tracking-[0.2em] text-[10px] transition-all duration-300 flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-txt-primary/5;
+  }
+
+  .nav-link.active {
+    color: rgb(var(--color-primary));
+    background-color: rgb(var(--color-primary) / 0.1);
+    border: 1px solid rgb(var(--color-primary) / 0.2);
+  }
+
+  .intelligence-gradient {
+    background: linear-gradient(135deg, rgb(var(--color-primary)) 0%, rgb(var(--color-secondary)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+}
+
+/* Theme Variations removed as they are now handled in :root above */
