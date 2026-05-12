@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Home, Camera, ShoppingBag, Users, User, Leaf, Trophy, BarChart3, 
+import {
+  Home, Camera, ShoppingBag, Users, User, Leaf, Trophy, BarChart3,
   Map as MapIcon, PieChart, PlayCircle, Sparkles, History, Search, Wallet as WalletIcon,
   Menu
 } from 'lucide-react';
@@ -65,7 +65,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-1.5 md:gap-4 shrink-0">
-          <button 
+          <button
             onClick={toggleMenu}
             className="lg:hidden p-2 bg-white/5 border border-white/10 text-txt-primary rounded-lg transition-all active:scale-95"
           >
@@ -75,15 +75,15 @@ const Navbar = () => {
           <div className="hidden xs:block">
             <PremiumBadge tier={subscription?.plan} showText={false} />
           </div>
-          
-          <button 
+
+          <button
             onClick={toggleSearch}
             className="p-2 md:p-2.5 bg-txt-primary/5 border border-dark-border/10 text-txt-primary hover:text-neon-green rounded-lg md:rounded-xl transition-all group relative active:scale-95"
           >
             <Search size={18} className="md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
           </button>
 
-          <button 
+          <button
             onClick={toggleChloe}
             className="p-2 md:p-2.5 bg-neon-green text-black rounded-lg md:rounded-xl hover:shadow-[0_0_20px_rgba(57,255,20,0.4)] transition-all group relative active:scale-95"
           >
@@ -93,7 +93,7 @@ const Navbar = () => {
           <Link to="/wallet" className="bg-txt-primary/5 rounded-xl md:rounded-2xl px-2 md:px-4 py-1.5 md:py-2 border border-dark-border/10 flex items-center gap-1.5 md:gap-3 hover:bg-txt-primary/10 transition-colors cursor-pointer group/balance max-w-[80px] xs:max-w-none">
             <img src="/plasticoin.png" alt="PLC" className="w-4 h-4 md:w-6 md:h-6 object-contain animate-pulse-slow group-hover/balance:scale-110 transition-transform" />
             <div className="flex flex-col">
-              <span className="text-[8px] xl:text-[10px] font-black text-txt-muted uppercase tracking-widest leading-none mb-1 hidden xl:block">Balance</span>
+              <span className="text-[8px] xl:text-[10px] font-black text-txt-muted uppercase tracking-widest leading-none mb-1 hidden xl:block"></span>
               <span className="text-[11px] md:text-sm font-black text-txt-primary leading-none truncate">{balance.toLocaleString()}</span>
             </div>
           </Link>

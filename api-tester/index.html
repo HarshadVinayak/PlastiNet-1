@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PlastiNet — API & Vision Tester</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#020402;color:#fff;font-family:'Segoe UI',sans-serif;padding:24px;min-height:100vh}
+  h1{font-size:2rem;font-weight:900;color:#39FF14;margin-bottom:4px;letter-spacing:-1px}
+  p.sub{color:#ffffff60;font-size:.85rem;margin-bottom:32px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;margin-bottom:32px}
+  .card{background:#0a140a;border:1px solid #ffffff10;border-radius:20px;padding:20px}
+  .card h2{font-size:1rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .badge{font-size:.65rem;padding:2px 8px;border-radius:999px;font-weight:700;text-transform:uppercase}
+  .badge.primary{background:#39FF14;color:#000}
+  .badge.backup{background:#00FFFF30;color:#00FFFF}
+  .badge.fallback{background:#FFD70030;color:#FFD700}
+  input[type=text],input[type=password]{width:100%;background:#ffffff08;border:1px solid #ffffff15;border-radius:10px;padding:10px 14px;color:#fff;font-size:.85rem;margin-bottom:10px;outline:none}
+  input:focus{border-color:#39FF14}
+  button{background:#39FF14;color:#000;border:none;border-radius:10px;padding:10px 18px;font-weight:800;cursor:pointer;font-size:.85rem;width:100%;margin-top:4px;transition:opacity .2s}
+  button:hover{opacity:.85}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .result{margin-top:14px;padding:12px;background:#000;border-radius:10px;font-size:.78rem;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;color:#aaa;border:1px solid #ffffff08}
+  .ok{border-color:#39FF1440 !important;color:#39FF14}
+  .fail{border-color:#EF444440 !important;color:#EF4444}
+  .drop{border:2px dashed #ffffff20;border-radius:14px;padding:28px;text-align:center;cursor:pointer;color:#ffffff40;font-size:.85rem;transition:.2s}
+  .drop:hover,.drop.over{border-color:#39FF14;color:#39FF14}
+  #preview{width:100%;max-height:220px;object-fit:contain;border-radius:10px;margin-top:10px;display:none}
+  .vision-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .vbtn{background:#0a140a;border:1px solid #ffffff15;color:#fff;border-radius:10px;padding:9px;font-size:.78rem;font-weight:700;cursor:pointer;transition:.2s}
+  .vbtn:hover{border-color:#39FF14;color:#39FF14}
+  .status{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
+  .s-ok{background:#39FF14;box-shadow:0 0 6px #39FF14}
+  .s-fail{background:#EF4444}
+  .s-idle{background:#ffffff30}
+  .s-loading{background:#FFD700;animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .key-row{display:flex;align-items:center;gap:8px}
+  .key-row input{flex:1;margin:0}
+  .key-row span{font-size:.7rem;color:#ffffff40;white-space:nowrap}
+  hr{border:none;border-top:1px solid #ffffff08;margin:20px 0}
+</style>
+</head>
+<body>
+
+<h1>🧪 PlastiNet — API & Vision Tester</h1>
+<p class="sub">Paste your API keys below to verify each connection. Keys stay in-browser only.</p>
+
+<div style="background:#0a140a;border:1px solid #FFD70030;border-radius:16px;padding:20px;margin-bottom:28px">
+  <h2 style="color:#FFD700;margin-bottom:14px;font-size:.9rem">🔑 Paste Your Keys</h2>
+  <div class="key-row"><input type="password" id="k-gemini" placeholder="VITE_GEMINI_API_KEY" /><span>Gemini</span></div>
+  <div class="key-row"><input type="password" id="k-groq" placeholder="VITE_GROQ_API_KEY" /><span>Groq</span></div>
+  <div class="key-row"><input type="password" id="k-samba" placeholder="VITE_SAMBANOVA_API_KEY" /><span>SambaNova</span></div>
+  <div class="key-row"><input type="password" id="k-google" placeholder="VITE_GOOGLE_API_KEY" /><span>Google (Cloud Vision)</span></div>
+  <div class="key-row"><input type="password" id="k-openrouter" placeholder="VITE_OPENROUTER_API_KEY" /><span>OpenRouter</span></div>
+  <button id="test-all-btn" onclick="testAll()">▶ Test All Text APIs</button>
+</div>
+
+<div class="grid">
+
+  <!-- Gemini -->
+  <div class="card">
+    <h2><span class="status s-idle" id="s-gemini"></span>Gemini 1.5 Flash <span class="badge primary">PRIMARY</span></h2>
+    <button onclick="testGeminiText()">Test Text</button>
+    <div class="result" id="r-gemini">Waiting...</div>
+  </div>
+
+  <!-- Groq -->
+  <div class="card">
+    <h2><span class="status s-idle" id="s-groq"></span>Groq Llama 3.3 <span class="badge primary">TEXT</span></h2>
+    <button onclick="testGroq()">Test Text</button>
+    <div class="result" id="r-groq">Waiting...</div>
+  </div>
+
+  <!-- SambaNova -->
+  <div class="card">
+    <h2><span class="status s-idle" id="s-samba"></span>SambaNova <span class="badge backup">BACKUP</span></h2>
+    <button onclick="testSamba()">Test Text</button>
+    <div class="result" id="r-samba">Waiting...</div>
+  </div>
+
+  <!-- Cloud Vision -->
+  <div class="card">
+    <h2><span class="status s-idle" id="s-vision"></span>Google Cloud Vision <span class="badge fallback">FALLBACK</span></h2>
+    <button onclick="testCloudVision()">Test (needs image below)</button>
+    <div class="result" id="r-vision">Upload an image first, then click Test.</div>
+  </div>
+
+</div>
+
+<!-- Vision Section -->
+<div class="card" style="margin-bottom:20px">
+  <h2>🖼️ Vision Analysis Tester</h2>
+  <p style="color:#ffffff50;font-size:.8rem;margin-bottom:14px">Drop or paste any image to test all vision APIs side-by-side</p>
+
+  <div class="drop" id="drop-zone" onclick="document.getElementById('img-input').click()">
+    📷 Click to upload or drag & drop an image
+    <input type="file" id="img-input" accept="image/*" style="display:none" onchange="loadImage(event)">
+  </div>
+  <img id="preview" />
+
+  <div class="vision-grid" style="margin-top:14px">
+    <button class="vbtn" onclick="visionGemini()">🤖 Gemini Vision</button>
+    <button class="vbtn" onclick="visionSamba()">⚡ SambaNova Vision</button>
+    <button class="vbtn" onclick="visionCloudVision()">☁️ Cloud Vision API</button>
+    <button class="vbtn" onclick="visionAll()">🔁 Test All Vision</button>
+  </div>
+
+  <div style="margin-top:14px">
+    <div style="color:#ffffff50;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Gemini Vision Result</div>
+    <div class="result" id="vr-gemini">—</div>
+    <div style="color:#ffffff50;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;margin:10px 0 6px">SambaNova Vision Result</div>
+    <div class="result" id="vr-samba">—</div>
+    <div style="color:#ffffff50;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;margin:10px 0 6px">Cloud Vision Result</div>
+    <div class="result" id="vr-cloud">—</div>
+  </div>
+</div>
+
+<script>
+const key = id => document.getElementById(id).value.trim();
+const res = (id, text, ok) => {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'result ' + (ok === true ? 'ok' : ok === false ? 'fail' : '');
+};
+const status = (id, s) => {
+  const el = document.getElementById('s-' + id);
+  el.className = 'status s-' + s;
+};
+
+let currentBase64 = null;
+let currentMime = 'image/jpeg';
+
+// ─── Image Loading ───────────────────────────────────────────────────────────
+function loadImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  currentMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = ev => {
+    currentBase64 = ev.target.result.split(',')[1];
+    const preview = document.getElementById('preview');
+    preview.src = ev.target.result;
+    preview.style.display = 'block';
+    document.getElementById('drop-zone').textContent = '✅ Image loaded: ' + file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('over');
+  const file = e.dataTransfer.files[0];
+  if (file) loadImage({target:{files:[file]}});
+});
+
+// ─── TEXT TESTS ──────────────────────────────────────────────────────────────
+async function testGeminiText() {
+  status('gemini', 'loading');
+  res('r-gemini', 'Discovering working model...');
+  const k = key('k-gemini');
+  if (!k) { res('r-gemini','❌ No key provided', false); status('gemini','fail'); return; }
+  // Try multiple model names to find what works with this key
+  const models = [
+    'gemini-2.5-flash-lite-preview-06-17',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash-lite',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash-latest',
+    'gemini-1.5-flash',
+  ];
+  for (const model of models) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${k}`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({contents:[{parts:[{text:'Reply with exactly: OK'}]}]})
+      });
+      const d = await r.json();
+      if (!r.ok) continue; // try next model
+      const text = d.candidates?.[0]?.content?.parts?.[0]?.text || 'empty';
+      res('r-gemini', `✅ Working model: ${model}\n${text}`, true);
+      status('gemini','ok');
+      window._workingGeminiModel = model;
+      return;
+    } catch(e) { continue; }
+  }
+  res('r-gemini','❌ No working Gemini model found for this key.', false);
+  status('gemini','fail');
+}
+
+async function testGroq() {
+  status('groq','loading'); res('r-groq','Testing...');
+  const k = key('k-groq');
+  if (!k) { res('r-groq','❌ No key', false); status('groq','fail'); return; }
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST', headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},
+      body: JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:'Reply with exactly: GROQ_OK'}],max_tokens:20})
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(JSON.stringify(d));
+    res('r-groq','✅ ' + d.choices[0].message.content, true);
+    status('groq','ok');
+  } catch(e) { res('r-groq','❌ '+e.message,false); status('groq','fail'); }
+}
+
+async function testSamba() {
+  status('samba','loading'); res('r-samba','Testing...');
+  const k = key('k-samba');
+  if (!k) { res('r-samba','❌ No key',false); status('samba','fail'); return; }
+  const models = ['Meta-Llama-3.1-8B-Instruct','Meta-Llama-3.3-70B-Instruct','Llama-4-Scout-17B-16E-Instruct'];
+  for (const model of models) {
+    try {
+      const r = await fetch('https://api.sambanova.ai/v1/chat/completions', {
+        method:'POST', headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},
+        body: JSON.stringify({model,messages:[{role:'user',content:'Reply OK'}],max_tokens:10})
+      });
+      const d = await r.json();
+      if (!r.ok) continue;
+      res('r-samba',`✅ Working model: ${model}\n`+d.choices[0].message.content, true);
+      status('samba','ok');
+      window._workingSambaModel = model;
+      return;
+    } catch(e) { continue; }
+  }
+  res('r-samba','❌ No working SambaNova model found',false);
+  status('samba','fail');
+}
+
+async function testCloudVision() {
+  status('vision','loading'); res('r-vision','Testing...');
+  if (!currentBase64) { res('r-vision','❌ Upload an image first',false); status('vision','fail'); return; }
+  const k = key('k-google');
+  if (!k) { res('r-vision','❌ No key',false); status('vision','fail'); return; }
+  try {
+    const r = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${k}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({requests:[{image:{content:currentBase64},features:[{type:'LABEL_DETECTION',maxResults:5}]}]})
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(JSON.stringify(d));
+    const labels = d.responses?.[0]?.labelAnnotations?.map(l=>l.description).join(', ') || 'No labels';
+    res('r-vision','✅ Labels: '+labels,true);
+    status('vision','ok');
+  } catch(e) { res('r-vision','❌ '+e.message,false); status('vision','fail'); }
+}
+
+async function testAll() {
+  await Promise.allSettled([testGeminiText(), testGroq(), testSamba()]);
+}
+
+// ─── VISION TESTS ────────────────────────────────────────────────────────────
+const VISION_PROMPT = `Look at this image. Return ONLY a JSON object, no markdown:
+{"labels":[{"description":"label","score":0.9}],"hasPlastic":true,"isSafe":true,"summary":"what you see"}`;
+
+async function visionGemini() {
+  res('vr-gemini','Testing Gemini vision...');
+  if (!currentBase64) { res('vr-gemini','❌ Upload image first',false); return; }
+  const k = key('k-gemini');
+  if (!k) { res('vr-gemini','❌ No Gemini key',false); return; }
+  const models = [
+    window._workingGeminiModel,
+    'gemini-2.5-flash-lite-preview-06-17',
+    'gemini-2.0-flash-lite',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash-latest',
+    'gemini-1.5-flash',
+  ].filter(Boolean);
+  for (const model of models) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${k}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:VISION_PROMPT},{inlineData:{data:currentBase64,mimeType:currentMime}}]}]})
+      });
+      const d = await r.json();
+      if(!r.ok) continue;
+      const text = d.candidates?.[0]?.content?.parts?.[0]?.text || 'empty';
+      const el = document.getElementById('vr-gemini');
+      el.textContent = `✅ [${model}]\n` + text;
+      el.className = 'result ok';
+      return;
+    } catch(e) { continue; }
+  }
+  const el = document.getElementById('vr-gemini');
+  el.textContent = '❌ All Gemini models failed for vision';
+  el.className = 'result fail';
+}
+
+async function visionSamba() {
+  res('vr-samba','Testing SambaNova vision...');
+  if (!currentBase64) { res('vr-samba','❌ Upload image first'); return; }
+  const k = key('k-samba');
+  if (!k) { res('vr-samba','❌ No SambaNova key'); return; }
+  const dataUrl = `data:${currentMime};base64,${currentBase64}`;
+  // Also try Groq vision as an alternative
+  const groqKey = key('k-groq');
+  if (groqKey) {
+    try {
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+        method:'POST',headers:{'Authorization':'Bearer '+groqKey,'Content-Type':'application/json'},
+        body:JSON.stringify({model:'meta-llama/llama-4-scout-17b-16e-instruct',messages:[{role:'user',content:[{type:'text',text:VISION_PROMPT},{type:'image_url',image_url:{url:dataUrl}}]}],max_tokens:300})
+      });
+      const d = await r.json();
+      if(r.ok) {
+        const el = document.getElementById('vr-samba');
+        el.textContent = '✅ [Groq Vision fallback] ' + d.choices[0].message.content;
+        el.className = 'result ok';
+        return;
+      }
+    } catch(e) {}
+  }
+  const models = [window._workingSambaModel,'Meta-Llama-3.2-11B-Vision-Instruct','Llama-4-Scout-17B-16E-Instruct'].filter(Boolean);
+  for (const model of models) {
+    try {
+      const r = await fetch('https://api.sambanova.ai/v1/chat/completions',{
+        method:'POST',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},
+        body:JSON.stringify({model,messages:[{role:'user',content:[{type:'text',text:VISION_PROMPT},{type:'image_url',image_url:{url:dataUrl}}]}],max_tokens:300})
+      });
+      const d = await r.json();
+      if(!r.ok) continue;
+      const el = document.getElementById('vr-samba');
+      el.textContent = `✅ [${model}] ` + d.choices[0].message.content;
+      el.className = 'result ok';
+      return;
+    } catch(e) { continue; }
+  }
+  const el = document.getElementById('vr-samba');
+  el.textContent = '❌ SambaNova/Groq vision both failed';
+  el.className = 'result fail';
+}
+
+async function visionCloudVision() {
+  res('vr-cloud','Testing Cloud Vision...');
+  if (!currentBase64) { res('vr-cloud','❌ Upload image first'); return; }
+  const k = key('k-google');
+  if (!k) { res('vr-cloud','❌ No Google key'); return; }
+  try {
+    const r = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${k}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({requests:[{image:{content:currentBase64},features:[{type:'LABEL_DETECTION',maxResults:8},{type:'SAFE_SEARCH_DETECTION'}]}]})
+    });
+    const d = await r.json();
+    if(!r.ok) throw new Error(JSON.stringify(d));
+    const result = d.responses?.[0];
+    const labels = result?.labelAnnotations?.map(l=>`${l.description} (${Math.round(l.score*100)}%)`).join(', ') || 'None';
+    const safe = result?.safeSearchAnnotation?.adult;
+    const el = document.getElementById('vr-cloud');
+    el.textContent = `✅ Labels: ${labels}\nSafe search adult: ${safe}`;
+    el.className = 'result ok';
+  } catch(e) {
+    const el = document.getElementById('vr-cloud');
+    el.textContent = '❌ ' + e.message;
+    el.className = 'result fail';
+  }
+}
+
+async function visionAll() {
+  await Promise.allSettled([visionGemini(), visionSamba(), visionCloudVision()]);
+}
+</script>
+</body>
+</html>

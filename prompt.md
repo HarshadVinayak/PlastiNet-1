@@ -1,3 +1,9 @@
-whaterver we are doing now do not push these to repo only when i say Push to this "" repo then only you need to push to the repo in the screenshot there Feed - Reels - Group Chat now add communtity chat so community chat is the one where the users can message in their community are sectors locations and Group Chat will have personal created groups in profile add Friends and add Friends Request, Friends, Requests Pending and add this must be e feature to make the world green by bringing everyone into 1 and make the world better so let chloe watch over the chat any innaprpriate and adultrated content and unwanted content cannot be sent like that an Boundeveity and Inculsivety
+when i click Skip and Collect Base Points it is showing 
+Syncing base rewards...
+and nothing is happening
 
-https://github.com/HarshadVinayak/Plastinet---Trial
+ no rerouting
+no redirecting
+no earning points 
+no nothing 
+only Syncing base rewards...
