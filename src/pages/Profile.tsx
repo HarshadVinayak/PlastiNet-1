@@ -13,7 +13,7 @@ import { useUIStore } from '../stores/uiStore';
 import toast from 'react-hot-toast';
 import PremiumBadge from '../components/ui/PremiumBadge';
 import { Link } from 'react-router-dom';
-
+import { supabase } from '../lib/supabase';
 type TabId = 'personalisation' | 'notifications' | 'social' | 'account' | 'membership';
 
 const Profile = () => {
@@ -407,10 +407,38 @@ const Profile = () => {
                         className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-neon-green outline-none transition-all"
                       />
                       <button 
-                        onClick={() => {
-                          toast.error("Global directory indexing... Direct ID required for now.");
+                        disabled={loading}
+                        onClick={async () => {
+                          if (!searchQuery.trim()) return;
+                          setLoading(true);
+                          try {
+                            let targetId = searchQuery.trim();
+                            
+                            // If it's not a UUID, search by username
+                            if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetId)) {
+                              const { data, error } = await supabase
+                                .from('profiles')
+                                .select('id')
+                                .eq('username', targetId)
+                                .single();
+                                
+                              if (error || !data) {
+                                toast.error("User not found. Check exact username.");
+                                setLoading(false);
+                                return;
+                              }
+                              targetId = data.id;
+                            }
+                            
+                            await sendFriendRequest(targetId);
+                            setSearchQuery('');
+                          } catch (err) {
+                            toast.error("Failed to process request.");
+                          } finally {
+                            setLoading(false);
+                          }
                         }}
-                        className="btn-primary px-6 py-3"
+                        className="btn-primary px-6 py-3 disabled:opacity-50"
                       >
                         <Sparkles size={18} />
                       </button>
