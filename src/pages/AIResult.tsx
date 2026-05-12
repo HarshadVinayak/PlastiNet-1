@@ -406,10 +406,17 @@ const AIResult = () => {
                   clearSession();
                   navigate('/');
                 } else {
-                  toast.success("Syncing base rewards...");
-                  await addTransaction('BONUS', 2, 'Base Scanning Points (Fast-Track)');
-                  clearSession();
-                  navigate('/');
+                  const loadingToast = toast.loading("Syncing base rewards...");
+                  try {
+                    await addTransaction('BONUS', 2, 'Base Scanning Points (Fast-Track)');
+                    toast.success("Points collected!", { id: loadingToast });
+                  } catch (e) {
+                    console.error("Reward sync failed:", e);
+                    toast.error("Reward sync failed, but proceeding...", { id: loadingToast });
+                  } finally {
+                    clearSession();
+                    navigate('/');
+                  }
                 }
               }}
               className="w-full flex items-center justify-center gap-2 text-white/40 hover:text-white transition-colors group"
