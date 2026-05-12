@@ -6,6 +6,8 @@ import { useAuthStore } from './stores/authStore';
 import { useUIStore } from './stores/uiStore';
 import { useRewardStore } from './stores/rewardStore';
 import { useSubscriptionStore } from './stores/subscriptionStore';
+import { App as CapacitorApp } from '@capacitor/app';
+import { supabase } from './lib/supabase';
 
 import Onboarding from './components/shared/Onboarding';
 import ChloeFloatingButton from './components/ui/ChloeFloatingButton';
@@ -40,6 +42,27 @@ function App() {
   const [hasOnboarded, setHasOnboarded] = React.useState(() => {
     return localStorage.getItem('plastinet_onboarded') === 'true';
   });
+
+  // Handle Native Deep Links (OAuth Redirects)
+  useEffect(() => {
+    CapacitorApp.addListener('appUrlOpen', async (data: any) => {
+      const url = new URL(data.url);
+      
+      // Handle Supabase Auth Redirects
+      if (url.hash && (url.hash.includes('access_token') || url.hash.includes('error'))) {
+        const hashParams = new URLSearchParams(url.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+
+        if (accessToken && refreshToken) {
+          await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+        }
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const init = async () => {

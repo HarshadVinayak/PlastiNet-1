@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../lib/supabase';
+import { Capacitor } from '@capacitor/core';
+
+const getRedirectUrl = () => {
+  if (Capacitor.isNativePlatform()) {
+    return 'com.plastinet.app://login';
+  }
+  return window.location.origin;
+};
 
 export type Occupation = 'School' | 'College' | 'Working';
 
@@ -131,7 +139,7 @@ export const useAuthStore = create<AuthState>()(
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: window.location.origin,
+            redirectTo: getRedirectUrl(),
             queryParams: {
               access_type: 'offline',
               prompt: 'consent',
