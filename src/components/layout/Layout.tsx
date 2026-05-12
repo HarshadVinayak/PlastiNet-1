@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
+import MobileNav from './MobileNav';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Zap, Globe } from 'lucide-react';
 
@@ -38,8 +39,9 @@ const Layout = () => {
       </div>
 
       <Navbar />
+      <MobileNav />
 
-      <main className="container mx-auto px-6 pt-32 pb-20 relative z-10">
+      <main className="container mx-auto px-6 pt-32 pb-32 lg:pb-20 relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
