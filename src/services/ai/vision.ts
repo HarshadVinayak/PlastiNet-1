@@ -9,7 +9,7 @@ const stripBase64Prefix = (base64: string) => {
 export const visionScan = {
   gemini: async (base64Image: string, prompt: string) => {
     const genAI = new GoogleGenerativeAI(CONFIG.API_KEYS.GEMINI || '');
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite-preview-06-17" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const imageParts = [
       {
