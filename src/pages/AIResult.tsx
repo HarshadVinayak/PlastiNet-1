@@ -186,11 +186,11 @@ const AIResult = () => {
           <div className="flex gap-4">
             <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl">
               <p className="text-[10px] text-white/40 uppercase font-bold">Category</p>
-              <p className="font-bold text-neon-green">{session?.beforeData?.classification || 'Type 1 (PETE)'}</p>
+              <p className="font-bold text-neon-green">{session?.beforeData?.classification || 'Plastic Item'}</p>
             </div>
             <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl">
-              <p className="text-[10px] text-white/40 uppercase font-bold">Integrity</p>
-              <p className="font-bold text-neon-cyan">High Trust</p>
+              <p className="text-[10px] text-white/40 uppercase font-bold">Complexity</p>
+              <p className="font-bold text-neon-cyan">{session?.beforeData?.complexityScore ?? '—'}/100</p>
             </div>
           </div>
           

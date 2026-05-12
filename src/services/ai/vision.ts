@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CONFIG } from '../../config';
 
 // Helper to strip data URL prefix if present
@@ -8,21 +7,30 @@ const stripBase64Prefix = (base64: string) => {
 
 export const visionScan = {
   gemini: async (base64Image: string, prompt: string) => {
-    const genAI = new GoogleGenerativeAI(CONFIG.API_KEYS.GEMINI || '');
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
-
-    const imageParts = [
+    // Using REST API directly (confirmed working)
+    const mimeType = base64Image.match(/data:([^;]+);/)?.[1] || 'image/jpeg';
+    const base64Data = stripBase64Prefix(base64Image);
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${CONFIG.API_KEYS.GEMINI}`,
       {
-        inlineData: {
-          data: stripBase64Prefix(base64Image),
-          mimeType: base64Image.match(/data:([^;]+);/)?.[1] || "image/jpeg"
-        }
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: prompt },
+              { inlineData: { data: base64Data, mimeType } }
+            ]
+          }]
+        })
       }
-    ];
-
-    const result = await model.generateContent([prompt, ...imageParts]);
-    const response = await result.response;
-    return response.text();
+    );
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(`Gemini API error: ${err?.error?.message || response.status}`);
+    }
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   },
 
   sambaNova: async (base64Image: string, prompt: string) => {
