@@ -28,6 +28,8 @@ STRICT RULE: ONLY discuss environmental science, recycling, sustainability, Plas
 If a user asks about unrelated topics (politics, entertainment, non-eco sports, etc.), politely steer them back to sustainability.
 Be high-energy, encouraging, and use eco-tech terminology.
 
+LOCATION AWARENESS: You have direct access to the user's real-time GPS location and surrounding eco-infrastructure. Use this data to provide specific, convenient recommendations. Never say you don't have access to their location.
+
 FORMATTING RULE: Format your responses like an engaging story! Always make them detailed, neat, with plenty of content and words. Use clean bullet points and proper paragraphs to make the text highly readable and well-structured.
 `;
 
@@ -66,9 +68,24 @@ export const useAIStore = create<AIState>((set, get) => ({
         isTyping: true 
       }));
 
+      const { useLocationStore } = await import('./locationStore');
+      const { usePreferenceStore } = await import('./preferenceStore');
+      const { city, nearbyPlaces } = useLocationStore.getState();
+      const { preferences } = usePreferenceStore.getState();
+
+      let dynamicSystemPrompt = GLOBAL_MODERATION_RULE;
+      dynamicSystemPrompt += `\n\nCURRENT USER DATA:\n- Location: ${city || 'Unknown Area'}\n- Accessibility: ${preferences.accessibility}\n`;
+      
+      if (nearbyPlaces.length > 0) {
+        dynamicSystemPrompt += `- Local Recycling Centers within 6km:\n`;
+        nearbyPlaces.slice(0, 3).forEach(p => {
+          dynamicSystemPrompt += `  * ${p.name}: ${p.address}\n`;
+        });
+      }
+
       const stream = await groq.chat.completions.create({
         messages: [
-          { role: 'system', content: GLOBAL_MODERATION_RULE },
+          { role: 'system', content: dynamicSystemPrompt },
           ...get().messages.slice(0, -1).map(m => ({
             role: m.role,
             content: m.content
