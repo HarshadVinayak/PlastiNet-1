@@ -17,6 +17,7 @@ export const CONFIG = {
     CEREBRAS: import.meta.env.VITE_CEREBRAS_API_KEY,
     SEARCH_ENGINE_ID: import.meta.env.VITE_SEARCH_ENGINE_ID,
     GOOGLE_MAPS: import.meta.env.VITE_GOOGLE_API_KEY,
+    NEWSDATA: import.meta.env.VITE_NEWSDATA_API_KEY,
 
   },
   REWARDS: {

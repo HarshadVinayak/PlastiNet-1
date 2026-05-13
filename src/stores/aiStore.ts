@@ -24,14 +24,17 @@ interface AIState {
 const GLOBAL_MODERATION_RULE = `
 You are Chloe, the PlastiNet AI Impact Agent. 
 Your core mission is to help users recycle better and track their environmental impact.
-STRICT RULE: ONLY discuss environmental science, recycling, sustainability, PlastiNet features, and PlastiCoin earnings.
-If a user asks about unrelated topics (politics, entertainment, non-eco sports, etc.), politely steer them back to sustainability.
+STRICT TOPIC RULE: You are ONLY permitted to discuss: POLLUTION, ENVIRONMENT, ECO, ECOSYSTEM, PLANTS, NATURE, and PlastiNet features.
+If a user asks about unrelated topics, politely steer them back to these core environmental subjects.
 Be high-energy, encouraging, and use eco-tech terminology.
 
-LOCATION AWARENESS: You have direct access to the user's real-time GPS location and surrounding eco-infrastructure. Use this data to provide specific, convenient recommendations. Never say you don't have access to their location.
+LOCATION AWARENESS: You have direct access to the user's real-time GPS location and local recycling points. Use this to provide convenient advice.
 
-FORMATTING RULE: Format your responses like an engaging story! Always make them detailed, neat, with plenty of content and words. Use clean bullet points and proper paragraphs to make the text highly readable and well-structured.
+NEWS ACCESS: You have access to real-time environmental news headlines. Use them to keep the user informed about global eco-events.
+
+FORMATTING RULE: Format your responses like an engaging story! Always make them detailed, neat, with plenty of content and words. Use clean bullet points and proper paragraphs.
 `;
+
 
 export const useAIStore = create<AIState>((set, get) => ({
   messages: [
@@ -70,8 +73,11 @@ export const useAIStore = create<AIState>((set, get) => ({
 
       const { useLocationStore } = await import('./locationStore');
       const { usePreferenceStore } = await import('./preferenceStore');
+      const { newsService } = await import('../services/newsService');
+      
       const { city, nearbyPlaces } = useLocationStore.getState();
       const { preferences } = usePreferenceStore.getState();
+      const ecoNews = await newsService.fetchEcoNews();
 
       let dynamicSystemPrompt = GLOBAL_MODERATION_RULE;
       dynamicSystemPrompt += `\n\nCURRENT USER DATA:\n- Location: ${city || 'Unknown Area'}\n- Accessibility: ${preferences.accessibility}\n`;
@@ -80,6 +86,13 @@ export const useAIStore = create<AIState>((set, get) => ({
         dynamicSystemPrompt += `- Local Recycling Centers within 6km:\n`;
         nearbyPlaces.slice(0, 3).forEach(p => {
           dynamicSystemPrompt += `  * ${p.name}: ${p.address}\n`;
+        });
+      }
+
+      if (ecoNews.length > 0) {
+        dynamicSystemPrompt += `\n- LATEST GLOBAL ECO NEWS:\n`;
+        ecoNews.slice(0, 3).forEach(n => {
+          dynamicSystemPrompt += `  * ${n.title}\n`;
         });
       }
 

@@ -31,13 +31,14 @@ export const youtubeService = {
       }
 
       const queryPool = [
-        '45% plastic avoidance strategies',
-        'how to reduce plastic waste by 45 percent',
-        'sustainability innovation documentary 2024', 
-        'plastic recycling technology advancements', 
-        'ocean plastic cleanup technology',
-        'circular economy explained',
-        'environmental engineering restoration'
+        'environmental pollution documentaries 2024',
+        'global ecosystem restoration projects',
+        'climate change and nature preservation',
+        'plastic pollution in oceans and solutions',
+        'eco-friendly sustainable living tips',
+        'importance of plants in urban ecosystems',
+        'biodiversity and nature conservation',
+        'industrial pollution cleanup technology'
       ];
       
       const blacklist = ['drama', 'movie', 'reaction', 'roast', 'funny', 'music', 'hindi', 'tamil'];
