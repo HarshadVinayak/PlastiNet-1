@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.plastinet.app"
+    namespace = "com.plastinet.official"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.plastinet.app"
+        applicationId "com.plastinet.official"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

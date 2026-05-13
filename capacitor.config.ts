@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.plastinet.app',
+  appId: 'com.plastinet.official',
   appName: 'PlastiNet',
   webDir: 'dist'
 };

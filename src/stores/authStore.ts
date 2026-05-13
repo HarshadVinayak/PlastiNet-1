@@ -5,7 +5,7 @@ import { Capacitor } from '@capacitor/core';
 
 const getRedirectUrl = () => {
   if (Capacitor.isNativePlatform()) {
-    return 'com.plastinet.app://login';
+    return 'com.plastinet.official://login';
   }
   return window.location.origin;
 };
