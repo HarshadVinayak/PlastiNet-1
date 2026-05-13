@@ -65,6 +65,11 @@ function startGPS() {
       sharedStatus = 'ok';
       notify();
       sharedLabel = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+      
+      // Sync with Global Location Store for Chloe AI
+      const { useLocationStore } = await import('../stores/locationStore');
+      useLocationStore.getState().updateLocation(pos.coords.latitude, pos.coords.longitude, sharedLabel);
+      
       notify();
     },
     () => {
@@ -76,9 +81,17 @@ function startGPS() {
 
   if (watchId === null) {
     watchId = navigator.geolocation.watchPosition(
-      (pos) => {
+      async (pos) => {
         sharedCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
         sharedStatus = 'ok';
+        
+        // Background sync for moving users
+        const { useLocationStore } = await import('../stores/locationStore');
+        const state = useLocationStore.getState();
+        if (!state.coords || Math.abs(state.coords.lat - pos.coords.latitude) > 0.01) {
+           state.updateLocation(pos.coords.latitude, pos.coords.longitude, sharedLabel);
+        }
+
         notify();
       },
       () => {},

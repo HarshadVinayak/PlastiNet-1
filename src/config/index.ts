@@ -16,6 +16,7 @@ export const CONFIG = {
     MISTRAL: import.meta.env.VITE_MISTRAL_API_KEY,
     CEREBRAS: import.meta.env.VITE_CEREBRAS_API_KEY,
     SEARCH_ENGINE_ID: import.meta.env.VITE_SEARCH_ENGINE_ID,
+    GOOGLE_MAPS: import.meta.env.VITE_GOOGLE_API_KEY,
 
   },
   REWARDS: {
