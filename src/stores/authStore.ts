@@ -22,6 +22,10 @@ export interface UserProfile {
   joined_at: string;
   plc_balance: number;
   subscription_tier: 'BRONZE' | 'SILVER' | 'GOLD';
+  country: string;
+  state: string;
+  district: string;
+  pincode: string;
   theme: string;
   chloe_voice: string;
   chloe_model: string;
@@ -84,6 +88,10 @@ export const useAuthStore = create<AuthState>()(
             joined_at: new Date().toISOString(),
             plc_balance: 0,
             subscription_tier: 'BRONZE',
+            country: '',
+            state: '',
+            district: '',
+            pincode: '',
             theme: 'dark',
             chloe_voice: 'Natural Calm',
             chloe_model: 'Llama-3.3-70b-Versatile',

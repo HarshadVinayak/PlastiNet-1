@@ -15,7 +15,7 @@ Respond ONLY with a valid JSON object - no markdown, no code fences, no extra te
 {"type":"Name of the object","classification":"Type of plastic e.g. Type 1 PET","complexityScore":50,"environmentalImpact":"Short description of impact if not recycled","baseReward":100}`;
 
   try {
-    const responseText = await aiService.runVisionScan(image, prompt);
+    const responseText = await aiService.runVisionScan(image, prompt, false);
     const parsed = extractJson(responseText);
     if (parsed && parsed.type) return parsed as WasteAnalysis;
     throw new Error("Invalid response structure");

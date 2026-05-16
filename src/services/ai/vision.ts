@@ -42,7 +42,7 @@ export const visionScan = {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "Meta-Llama-3.3-70B-Instruct",
+        model: "Llama-4-Maverick-17B-128E-Instruct",
         messages: [{
           role: "user",
           content: [
@@ -71,7 +71,7 @@ export const visionScan = {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        model: "openai/gpt-oss-20b",
         messages: [{
           role: "user",
           content: [
@@ -99,7 +99,7 @@ export const visionScan = {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "google/gemma-2-9b-it:free", // Using a free vision-capable model or fallback
+        model: "google/gemma-4-31b-it:free", // Using a free vision-capable model or fallback
         messages: [
           {
             role: "user",
@@ -121,5 +121,24 @@ export const visionScan = {
 
     const data = await response.json();
     return data.choices[0].message.content;
+  },
+
+  huggingface: async (base64Image: string, prompt: string) => {
+    const response = await fetch("https://api-inference.huggingface.co/models/Qwen/Qwen3.6-35B-A3B", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${CONFIG.API_KEYS.HUGGING_FACE}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        inputs: {
+          image: stripBase64Prefix(base64Image),
+          text: prompt
+        }
+      })
+    });
+    if (!response.ok) throw new Error(`Hugging Face Vision error: ${response.status}`);
+    const data = await response.json();
+    return data[0]?.generated_text || '';
   }
 };

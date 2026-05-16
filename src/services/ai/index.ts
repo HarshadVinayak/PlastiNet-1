@@ -38,8 +38,8 @@ class AIProviderService {
     return `${context}\nINSTRUCTIONS:\nUse the local context and user preferences above to provide extremely convenient, specific, and actionable advice. Prioritize suggestions that match their travel mode (e.g., if they walk, find the closest one; if they drive, find one with good parking). Be their helpful, empathetic, location-aware environmental assistant (Chloe).\n\nUSER REQUEST: ${userPrompt}`;
   }
 
-  async runVisionScan(base64Image: string, prompt: string) {
-    const contextualPrompt = await this.getContextualPrompt(prompt);
+  async runVisionScan(base64Image: string, prompt: string, useContext = true) {
+    const contextualPrompt = useContext ? await this.getContextualPrompt(prompt) : prompt;
     try {
       // Primary: Gemini 2.5 Flash Lite (confirmed working)
       if (CONFIG.API_KEYS.GEMINI) {
@@ -65,8 +65,8 @@ class AIProviderService {
     }
   }
 
-  async runTextCompletion(prompt: string, systemPrompt?: string) {
-    const contextualPrompt = await this.getContextualPrompt(prompt);
+  async runTextCompletion(prompt: string, systemPrompt?: string, useContext = true) {
+    const contextualPrompt = useContext ? await this.getContextualPrompt(prompt) : prompt;
     try {
       // Primary: Groq Llama 3.3
       if (CONFIG.API_KEYS.GROQ) {

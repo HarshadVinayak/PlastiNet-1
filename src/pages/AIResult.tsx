@@ -118,6 +118,8 @@ const AIResult = () => {
         const resp = await aiService.runTextCompletion(
           `You are Chloe AI. The user scanned: "${itemType}" (${classification}). Give concise eco-tips. Respond ONLY with valid JSON, no markdown:
 {"reduce":["tip1","tip2"],"reuse":["tip1","tip2"],"recycle":["tip1","tip2"],"impact":"One sentence about environmental impact of this specific item if not recycled."}`,
+          undefined,
+          false
         );
         const start = resp.indexOf('{');
         const end = resp.lastIndexOf('}');

@@ -26,9 +26,10 @@ function notify() {
 
 let watchId: number | null = null;
 
-async function reverseGeocode(lat: number, lng: number): Promise<string> {
+async function reverseGeocode(lat: number, lng: number): Promise<{ city: string; district: string; pincode: string }> {
   const { CONFIG } = await import('../config');
-  if (!CONFIG.API_KEYS.GOOGLE) return 'Your Area';
+  const fallback = { city: 'Your Area', district: 'Unknown District', pincode: '000000' };
+  if (!CONFIG.API_KEYS.GOOGLE) return fallback;
 
   try {
     const res = await fetch(
@@ -36,19 +37,23 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
     );
     const data = await res.json();
     if (data.status === 'OK' && data.results.length > 0) {
-      // Find the most relevant address component (e.g., locality or sublocality)
       const result = data.results[0];
-      const city = result.address_components.find((c: any) => 
-        c.types.includes('locality') || 
-        c.types.includes('sublocality_level_1') || 
-        c.types.includes('administrative_area_level_2')
-      );
-      return city ? city.long_name : 'Your Area';
+      const components = result.address_components;
+      
+      const cityComp = components.find((c: any) => c.types.includes('locality'));
+      const districtComp = components.find((c: any) => c.types.includes('administrative_area_level_2'));
+      const pinComp = components.find((c: any) => c.types.includes('postal_code'));
+
+      return {
+        city: cityComp ? cityComp.long_name : 'Your Area',
+        district: districtComp ? districtComp.long_name : 'Unknown District',
+        pincode: pinComp ? pinComp.long_name : '000000'
+      };
     }
-    return 'Your Area';
+    return fallback;
   } catch (error) {
     console.error('Reverse Geocoding Error:', error);
-    return 'Your Area';
+    return fallback;
   }
 }
 
@@ -64,11 +69,13 @@ function startGPS() {
       sharedCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
       sharedStatus = 'ok';
       notify();
-      sharedLabel = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+      
+      const details = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+      sharedLabel = details.city;
       
       // Sync with Global Location Store for Chloe AI
       const { useLocationStore } = await import('../stores/locationStore');
-      useLocationStore.getState().updateLocation(pos.coords.latitude, pos.coords.longitude, sharedLabel);
+      useLocationStore.getState().updateLocation(pos.coords.latitude, pos.coords.longitude, details);
       
       notify();
     },
@@ -89,7 +96,8 @@ function startGPS() {
         const { useLocationStore } = await import('../stores/locationStore');
         const state = useLocationStore.getState();
         if (!state.coords || Math.abs(state.coords.lat - pos.coords.latitude) > 0.01) {
-           state.updateLocation(pos.coords.latitude, pos.coords.longitude, sharedLabel);
+           const details = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+           state.updateLocation(pos.coords.latitude, pos.coords.longitude, details);
         }
 
         notify();

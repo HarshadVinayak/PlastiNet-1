@@ -15,7 +15,7 @@ export const analyzeAfterImage = async (beforeData: any, afterImage: string): Pr
   const prompt = formatChloeVerificationPrompt(beforeData);
 
   try {
-    const responseText = await aiService.runVisionScan(afterImage, prompt);
+    const responseText = await aiService.runVisionScan(afterImage, prompt, false);
     return extractJson(responseText) as AfterAnalysis;
   } catch (error) {
     console.error("After image verification failed:", error);

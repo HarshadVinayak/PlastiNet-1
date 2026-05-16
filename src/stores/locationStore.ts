@@ -4,21 +4,25 @@ import { googlePlaces, EcoPlace } from '../services/google/places';
 interface LocationState {
   coords: { lat: number; lng: number } | null;
   city: string;
+  district: string;
+  pincode: string;
   nearbyPlaces: EcoPlace[];
   lastUpdate: number;
 
-  updateLocation: (lat: number, lng: number, city: string) => Promise<void>;
+  updateLocation: (lat: number, lng: number, details: { city: string; district: string; pincode: string }) => Promise<void>;
   fetchNearby: () => Promise<void>;
 }
 
 export const useLocationStore = create<LocationState>((set, get) => ({
   coords: null,
   city: '',
+  district: '',
+  pincode: '',
   nearbyPlaces: [],
   lastUpdate: 0,
 
-  updateLocation: async (lat, lng, city) => {
-    set({ coords: { lat, lng }, city });
+  updateLocation: async (lat, lng, { city, district, pincode }) => {
+    set({ coords: { lat, lng }, city, district, pincode });
     // Fetch nearby places automatically if they haven't been updated in 30 mins
     if (Date.now() - get().lastUpdate > 1000 * 60 * 30) {
       await get().fetchNearby();

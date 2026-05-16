@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LogOut, MapPin, Check, Monitor, Moon, Sun, 
   Smartphone, Palette, Bell, Shield, User as UserIcon, 
-  Camera, Crown, Sparkles, Globe, ArrowRight, Zap, X, Users 
+  Camera, Crown, Sparkles, Globe, ArrowRight, Zap, X, Users, ChevronRight 
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useChatStore } from '../stores/chatStore';
@@ -14,11 +14,13 @@ import toast from 'react-hot-toast';
 import PremiumBadge from '../components/ui/PremiumBadge';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import LocationSettings from '../components/ui/LocationSettings';
 type TabId = 'personalisation' | 'notifications' | 'social' | 'account' | 'membership';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState<TabId>('personalisation');
   const [loading, setLoading] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Chat & Social Store
@@ -66,6 +68,26 @@ const Profile = () => {
     setLoading(true);
     try {
       await updateProfile({ [field]: value });
+      
+      // Sync with location store for real-time impact updates
+      if (field === 'district' || field === 'pincode') {
+        try {
+          const { useLocationStore } = await import('../stores/locationStore');
+          const current = useLocationStore.getState();
+          useLocationStore.getState().updateLocation(
+            current.coords?.lat || 0,
+            current.coords?.lng || 0,
+            {
+              city: current.city,
+              district: field === 'district' ? value : current.district,
+              pincode: field === 'pincode' ? value : current.pincode
+            }
+          );
+        } catch (e) {
+          console.error("Location sync failed:", e);
+        }
+      }
+      
       toast.success(`${field.replace('_', ' ')} updated!`);
     } catch (error: any) {
       toast.error(error.message);
@@ -540,6 +562,28 @@ const Profile = () => {
 
                     <button 
                       disabled={loading}
+                      onClick={() => setShowLocationModal(true)}
+                      className="w-full flex items-center justify-between p-6 bg-neon-cyan/5 rounded-[2rem] border border-neon-cyan/10 hover:border-neon-cyan/30 hover:bg-neon-cyan/10 transition-all group disabled:opacity-50 shadow-[0_0_20px_rgba(0,255,255,0.05)]"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-neon-cyan/10 rounded-2xl text-neon-cyan group-hover:scale-110 transition-transform">
+                           <Globe size={24} />
+                        </div>
+                        <div className="text-left">
+                          <span className="font-black text-lg text-txt-primary uppercase italic tracking-tighter">Location Identity</span>
+                          <p className="text-xs text-txt-muted uppercase tracking-widest mt-1">
+                            {profile?.country ? `${profile.country} • ${profile.state} • ${profile.district}` : 'Not configured for regional analysis'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-black text-neon-cyan bg-neon-cyan/10 px-3 py-1 rounded-full uppercase tracking-widest">{profile?.pincode || 'SET'}</span>
+                        <ChevronRight className="text-txt-muted group-hover:translate-x-1 transition-transform" size={20} />
+                      </div>
+                    </button>
+
+                    <button 
+                      disabled={loading}
                       onClick={handleUpdateEmail}
                       className="w-full flex items-center justify-between p-5 bg-txt-primary/5 rounded-xl border border-dark-border/10 hover:border-dark-border/20 transition-colors group disabled:opacity-50"
                     >
@@ -670,6 +714,22 @@ const Profile = () => {
         </div>
 
       </div>
+
+      {/* Location Settings Modal */}
+      <AnimatePresence>
+        {showLocationModal && (
+          <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLocationModal(false)}
+              className="absolute inset-0 bg-black/90 backdrop-blur-md"
+            />
+            <LocationSettings onClose={() => setShowLocationModal(false)} />
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

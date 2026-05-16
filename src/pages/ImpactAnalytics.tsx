@@ -1,26 +1,38 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { TrendingUp, Users, Leaf, ArrowUpRight, ArrowLeft } from 'lucide-react';
+import { TrendingUp, Users, Leaf, ArrowUpRight, ArrowLeft, Loader2 } from 'lucide-react';
 
-const impactData = [
-  { name: 'Jan', plastic: 400, co2: 240, amt: 2400 },
-  { name: 'Feb', plastic: 300, co2: 139, amt: 2210 },
-  { name: 'Mar', plastic: 550, co2: 380, amt: 2290 },
-  { name: 'Apr', plastic: 480, co2: 290, amt: 2000 },
-  { name: 'May', plastic: 650, co2: 480, amt: 2181 },
-  { name: 'Jun', plastic: 800, co2: 590, amt: 2500 },
-];
-
-const participationData = [
-  { name: 'Week 1', users: 120 },
-  { name: 'Week 2', users: 240 },
-  { name: 'Week 3', users: 180 },
-  { name: 'Week 4', users: 320 },
-];
+import { useEffect, useState } from 'react';
+import { impactService, RegionalImpact } from '../services/impactService';
+import { useLocationStore } from '../stores/locationStore';
 
 const ImpactAnalytics = () => {
   const navigate = useNavigate();
+  const { district, pincode } = useLocationStore();
+  const [data, setData] = useState<RegionalImpact | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadImpact = async () => {
+      setLoading(true);
+      const result = await impactService.getRegionalImpact(district, pincode);
+      setData(result);
+      setLoading(false);
+    };
+    loadImpact();
+  }, [district, pincode]);
+
+  if (loading) {
+    return (
+      <div className="h-96 flex flex-col items-center justify-center gap-4 text-white/40">
+        <Loader2 className="animate-spin text-neon-green" size={48} />
+        <p className="font-black uppercase tracking-widest animate-pulse">Aggregating Regional Proof...</p>
+      </div>
+    );
+  }
+
+  if (!data) return null;
   
   return (
     <motion.div
@@ -38,26 +50,26 @@ const ImpactAnalytics = () => {
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
             <span className="text-xs font-bold uppercase tracking-widest">Back to Map</span>
           </button>
-          <h1 className="text-4xl font-black tracking-tight mb-2">Impact Analytics</h1>
-          <p className="text-white/60">Data-driven insights predicting future environmental trends.</p>
+          <h1 className="text-4xl font-black tracking-tight mb-2 uppercase italic">Regional Impact: {data.district}</h1>
+          <p className="text-white/60">Live environmental intelligence for PIN: <span className="text-neon-cyan font-bold">{data.pincode}</span></p>
         </div>
-        <button className="btn-secondary py-2 hidden md:block">Download PDF Report</button>
+        <button className="btn-secondary py-2 hidden md:block">Download {data.district} Report</button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Total Plastic Removed" value="3,180 kg" trend="+18% vs last month" icon={<Leaf />} />
-        <StatCard title="CO2 Emissions Offset" value="2,119 kg" trend="+12% vs last month" icon={<TrendingUp />} color="text-neon-cyan" />
-        <StatCard title="Active Contributors" value="860" trend="+45 new this week" icon={<Users />} color="text-blue-400" />
+        <StatCard title="Total Plastic Removed" value={`${data.totalPlasticKg.toLocaleString()} kg`} trend="+18% vs last month" icon={<Leaf />} />
+        <StatCard title="CO2 Emissions Offset" value={`${data.co2OffsetKg.toLocaleString()} kg`} trend="+12% vs last month" icon={<TrendingUp />} color="text-neon-cyan" />
+        <StatCard title="Local Active Contributors" value={data.activeContributors.toLocaleString()} trend="+45 new this week" icon={<Users />} color="text-blue-400" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 glass-card p-6">
-          <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <TrendingUp className="text-neon-green" /> 6-Month Predictive Trajectory
+          <h3 className="text-xl font-bold mb-6 flex items-center gap-2 uppercase italic">
+            <TrendingUp className="text-neon-green" /> 6-Month Predictive Trajectory ({data.district})
           </h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={impactData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <AreaChart data={data.chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorPlastic" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#39FF14" stopOpacity={0.3}/>
@@ -84,10 +96,10 @@ const ImpactAnalytics = () => {
 
         <div className="space-y-8">
           <div className="glass-card p-6">
-            <h3 className="font-bold mb-4">Monthly Participation</h3>
+            <h3 className="font-bold mb-4 uppercase italic">Weekly Participation</h3>
             <div className="h-48 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={participationData}>
+                <BarChart data={data.weeklyParticipation}>
                   <XAxis dataKey="name" stroke="rgba(255,255,255,0.2)" fontSize={12} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px' }}
@@ -100,12 +112,12 @@ const ImpactAnalytics = () => {
           </div>
 
           <div className="glass-card p-6 border-neon-cyan/20 bg-neon-cyan/5">
-            <h3 className="font-bold mb-2 flex items-center gap-2">
-              <ArrowUpRight className="text-neon-cyan" /> AI Forecast
+            <h3 className="font-bold mb-2 flex items-center gap-2 uppercase italic">
+              <ArrowUpRight className="text-neon-cyan" /> AI Forecast: {data.district}
             </h3>
             <p className="text-sm text-white/70 leading-relaxed">
-              Based on current momentum, Sector A is projected to reach <span className="font-bold text-neon-cyan">carbon neutrality</span> for plastic waste within 4.2 months. 
-              Implementing a School-Mode drive could accelerate this by 18%.
+              Based on current momentum, <span className="text-white font-bold">{data.district}</span> is projected to reach <span className="font-bold text-neon-cyan">carbon neutrality</span> for plastic waste within 4.2 months. 
+              Implementing a School-Mode drive in PIN <span className="text-neon-cyan font-bold">{data.pincode}</span> could accelerate this by 18%.
             </p>
           </div>
         </div>
