@@ -12,7 +12,7 @@ class NewsService {
   private static instance: NewsService;
   private readonly TOPICS = 'pollution,environment,eco,ecosystem,plants,nature';
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): NewsService {
     if (!NewsService.instance) {
