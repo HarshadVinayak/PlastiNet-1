@@ -143,7 +143,7 @@ const LocationSettings = ({ onClose }: LocationSettingsProps) => {
               className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-txt-primary appearance-none focus:outline-none focus:border-neon-cyan transition-all disabled:opacity-30"
             >
               <option value="" className="bg-dark-deep">Select District</option>
-              {districts.map(d => <option key={d} value={d} className="bg-dark-deep">{d}</option>)}
+              {districts.map((d: string) => <option key={d} value={d} className="bg-dark-deep">{d}</option>)}
             </select>
             <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-txt-muted pointer-events-none rotate-90" size={18} />
           </div>

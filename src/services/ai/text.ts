@@ -95,7 +95,7 @@ export const textCompletion = {
     const response = await fetch("https://api.together.xyz/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${CONFIG.API_KEYS.TOGETHER}`,
+        "Authorization": `Bearer ${CONFIG.API_KEYS.TOGETHER_AI}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -115,7 +115,7 @@ export const textCompletion = {
     const response = await fetch("https://api.siliconflow.cn/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${CONFIG.API_KEYS.SILICON}`,
+        "Authorization": `Bearer ${CONFIG.API_KEYS.SILICON_API}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
