@@ -11,7 +11,7 @@ const Marketplace = () => {
       id: 1,
       name: "Bamboo Cutlery Set",
       price: 2500,
-      image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400",
+      image: "/cutlery.jpeg",
       tag: "Best Seller",
       rating: 4.8
     },
@@ -27,7 +27,7 @@ const Marketplace = () => {
       id: 3,
       name: "Solar Powered Charger",
       price: 12000,
-      image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&q=80&w=400",
+      image: "/charger.png",
       tag: "Premium",
       rating: 4.7
     },
@@ -35,7 +35,7 @@ const Marketplace = () => {
       id: 4,
       name: "Stainless Steel Bottle",
       price: 3500,
-      image: "https://images.unsplash.com/photo-1602143393494-710f71f6528e?auto=format&fit=crop&q=80&w=400",
+      image: "/bottle.png",
       tag: "Essential",
       rating: 4.9
     }
